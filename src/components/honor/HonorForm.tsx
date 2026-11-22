@@ -5,7 +5,7 @@ import { useId, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { paymentCopy } from "@/content/copy";
-import { CUSTOM_AMOUNT_LIMITS, isPreset, isValidAmount, parseHonorPrefill } from "@/lib/honor";
+import { CUSTOM_AMOUNT_LIMITS, isPreset, isValidAmount, parseHonorPrefill, type AmountLimits } from "@/lib/honor";
 import { formatMoney, toMinor, type Currency } from "@/lib/money";
 import { CurrencyToggle } from "./CurrencyToggle";
 import { PresetAmounts } from "./PresetAmounts";
@@ -19,12 +19,14 @@ import { PresetAmounts } from "./PresetAmounts";
 export function HonorForm({
   currencies,
   paymentsEnabled,
+  limits = CUSTOM_AMOUNT_LIMITS,
 }: {
   currencies: readonly Currency[];
   paymentsEnabled: boolean;
+  limits?: AmountLimits;
 }) {
   const searchParams = useSearchParams();
-  const prefill = parseHonorPrefill(searchParams, currencies);
+  const prefill = parseHonorPrefill(searchParams, currencies, limits);
 
   const [currency, setCurrency] = useState<Currency>(prefill.currency);
   const [preset, setPreset] = useState<number | null>(
@@ -38,7 +40,7 @@ export function HonorForm({
   const noticeId = useId();
 
   const customValue = custom.trim() === "" ? null : Number(custom);
-  const customInvalid = customValue !== null && !isValidAmount(customValue);
+  const customInvalid = customValue !== null && !isValidAmount(customValue, limits);
   const amount = customValue !== null ? (customInvalid ? null : customValue) : preset;
   const symbol = currency === "USD" ? "$" : "£";
 
@@ -89,8 +91,8 @@ export function HonorForm({
         {customInvalid && (
           <p id={errorId} className="mt-2 text-sm font-medium text-red-800">
             Please enter an amount between {symbol}
-            {CUSTOM_AMOUNT_LIMITS.min} and {symbol}
-            {CUSTOM_AMOUNT_LIMITS.max.toLocaleString("en-US")}, with no more than two decimal places.
+            {limits.min} and {symbol}
+            {limits.max.toLocaleString("en-US")}, with no more than two decimal places.
           </p>
         )}
       </div>

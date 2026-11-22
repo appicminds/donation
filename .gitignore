@@ -46,3 +46,7 @@ next-env.d.ts
 
 # allow the env template
 !.env.example
+
+# local scratch scripts
+/.scratch
+/media

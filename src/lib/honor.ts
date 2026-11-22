@@ -7,6 +7,8 @@ import { DEFAULT_CURRENCY, isCurrency, PRESET_AMOUNTS, type Currency } from "./m
  */
 export const CUSTOM_AMOUNT_LIMITS = { min: 1, max: 10_000 } as const;
 
+export type AmountLimits = { min: number; max: number };
+
 export type HonorSelection = { currency: Currency; amount: number | null };
 
 /**
@@ -17,20 +19,21 @@ export type HonorSelection = { currency: Currency; amount: number | null };
 export function parseHonorPrefill(
   params: { get(name: string): string | null },
   allowedCurrencies: readonly Currency[],
+  limits: AmountLimits = CUSTOM_AMOUNT_LIMITS,
 ): HonorSelection {
   const rawCurrency = params.get("currency")?.toUpperCase();
   const currency = isCurrency(rawCurrency) && allowedCurrencies.includes(rawCurrency) ? rawCurrency : DEFAULT_CURRENCY;
 
   const rawAmount = params.get("amount");
   const amount = rawAmount && /^\d{1,6}$/.test(rawAmount) ? Number(rawAmount) : null;
-  return { currency, amount: amount !== null && isValidAmount(amount) ? amount : null };
+  return { currency, amount: amount !== null && isValidAmount(amount, limits) ? amount : null };
 }
 
-export function isValidAmount(amount: number): boolean {
+export function isValidAmount(amount: number, limits: AmountLimits = CUSTOM_AMOUNT_LIMITS): boolean {
   return (
     Number.isFinite(amount) &&
-    amount >= CUSTOM_AMOUNT_LIMITS.min &&
-    amount <= CUSTOM_AMOUNT_LIMITS.max &&
+    amount >= limits.min &&
+    amount <= limits.max &&
     // At most two decimal places, tolerant of float error (19.99 * 100 = 1998.999…).
     Math.abs(Math.round(amount * 100) - amount * 100) < 1e-6
   );

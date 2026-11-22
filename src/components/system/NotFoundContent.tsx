@@ -1,10 +1,7 @@
-import type { Metadata } from "next";
 import { ButtonLink } from "@/components/ui/Button";
 
-export const metadata: Metadata = { title: "Page not found" };
-
-/** PRD §8.4: 404 copy. */
-export default function NotFound() {
+/** PRD §8.4: 404 copy. Shared by the site's not-found page and the global 404. */
+export function NotFoundContent() {
   return (
     <section className="bg-hero text-white">
       <div className="mx-auto flex max-w-site flex-col items-center px-4 py-28 text-center sm:px-6 lg:px-8">

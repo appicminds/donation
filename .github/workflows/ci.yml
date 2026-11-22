@@ -12,6 +12,20 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: comfort_kwaw
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Throwaway values for CI only.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/comfort_kwaw
+      PAYLOAD_SECRET: ci-only-not-a-real-secret-0123456789abcdef
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,6 +37,14 @@ jobs:
       - run: npm run typecheck
       - run: npm run format:check
       - run: npm test
+      # The public site must build with no database (static fallback).
+      - name: Build without a database
+        run: npm run build
+        env:
+          DATABASE_URL: ""
+          PAYLOAD_SECRET: ""
+      - run: npm run migrate
+      - run: npm run seed
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

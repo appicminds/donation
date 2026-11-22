@@ -3,16 +3,18 @@ import { ButtonLink } from "@/components/ui/Button";
 import { CurvedDivider } from "@/components/ui/CurvedDivider";
 import { FloralAccent } from "@/components/ui/FloralAccent";
 import { GlowPortrait } from "@/components/ui/GlowPortrait";
-import { legacyPage } from "@/content/copy";
+import { legacyPage as legacyDefaults } from "@/content/copy";
+import { getLegacyCopy } from "@/lib/cms";
 import { portrait, site } from "@/content/site";
 
-export const metadata: Metadata = { title: legacyPage.title, description: legacyPage.opening };
+export const metadata: Metadata = { title: legacyDefaults.title, description: legacyDefaults.opening };
 
 /**
  * Her Eternal Legacy (PRD §8.1). Uses only copy from the supplied brief. The
  * timeline and story chapters wait for verified, family-approved content.
  */
-export default function LegacyPage() {
+export default async function LegacyPage() {
+  const legacyPage = await getLegacyCopy();
   return (
     <>
       <section aria-labelledby="page-title" className="relative overflow-hidden bg-hero text-white">

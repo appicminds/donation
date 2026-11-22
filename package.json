@@ -2,6 +2,7 @@
   "name": "comfort-kwaw-memorial-fund",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -12,12 +13,28 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test --trace off",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "payload": "payload",
+    "generate:types": "payload generate:types",
+    "generate:importmap": "payload generate:importmap",
+    "migrate:create": "payload migrate:create",
+    "migrate": "payload migrate",
+    "seed": "payload run src/scripts/seed.ts"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "^3.94.1",
+    "@payloadcms/next": "^3.94.1",
+    "@payloadcms/storage-vercel-blob": "^3.94.1",
+    "@payloadcms/translations": "^3.94.1",
+    "@payloadcms/ui": "^3.94.1",
+    "graphql": "^16.15.0",
     "next": "16.4.6",
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "payload": "^3.94.1",
+    "payload-totp": "^3.0.7",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

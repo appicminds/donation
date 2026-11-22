@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { legalNav, mainNav, site } from "@/content/site";
+import { getSiteSettings } from "@/lib/cms";
 import { BrandMark } from "./BrandMark";
 
 /** Copyright year, generated rather than hardcoded (PRD §7.9). */
@@ -10,7 +11,8 @@ async function CopyrightYear() {
   return <>{new Date().getFullYear()}</>;
 }
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const { supportEmail } = await getSiteSettings();
   return (
     <footer className="bg-plum text-white/80">
       <div className="mx-auto grid max-w-site gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr] lg:px-8">
@@ -35,9 +37,9 @@ export function SiteFooter() {
         <div>
           <h2 className="eyebrow mb-4 text-gold">Get in touch</h2>
           {/* Show only a verified support email; never a placeholder (PRD §7.9). */}
-          {site.supportEmail ? (
-            <a href={`mailto:${site.supportEmail}`} className="text-sm hover:text-gold">
-              {site.supportEmail}
+          {supportEmail ? (
+            <a href={`mailto:${supportEmail}`} className="text-sm hover:text-gold">
+              {supportEmail}
             </a>
           ) : (
             <Link href="/contact" className="text-sm hover:text-gold">

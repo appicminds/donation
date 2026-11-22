@@ -5,19 +5,15 @@ import { ButtonLink } from "@/components/ui/Button";
 import { CurvedDivider } from "@/components/ui/CurvedDivider";
 import { FloralAccent } from "@/components/ui/FloralAccent";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { home } from "@/content/copy";
-import { flags } from "@/content/flags";
-import { galleryPhotos } from "@/content/gallery";
+import type { GalleryPhoto } from "@/content/gallery";
 import { portrait, site } from "@/content/site";
+import type { HomeCopy, PublicMemory } from "@/lib/cms";
 import type { Currency } from "@/lib/money";
 
 const container = "mx-auto max-w-site px-4 sm:px-6 lg:px-8";
 
-export const enabledCurrencies: readonly Currency[] = flags.gbpEnabled ? ["USD", "GBP"] : ["USD"];
-
 /** Section 2: Remembering Comfort (PRD §7.2). Ivory editorial split. */
-export function RememberingSection() {
-  const c = home.remembering;
+export function RememberingSection({ c }: { c: HomeCopy["remembering"] }) {
   return (
     <section aria-labelledby="remembering-title" className="py-16 sm:py-24">
       <div className={`${container} grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20`}>
@@ -54,8 +50,7 @@ export function RememberingSection() {
 }
 
 /** Section 3: Her Eternal Legacy (PRD §7.3). Purple feature panel. */
-export function LegacySection() {
-  const c = home.legacy;
+export function LegacySection({ c }: { c: HomeCopy["legacy"] }) {
   return (
     <section aria-labelledby="legacy-title" className="px-2 sm:px-4">
       <div className="relative mx-auto max-w-[88rem] overflow-hidden rounded-[2rem] bg-hero text-white shadow-2xl">
@@ -87,9 +82,8 @@ export function LegacySection() {
  * Section 4: The Purpose Behind Her Legacy (PRD §7.4). Hidden until the
  * wording is approved by family, counsel and the payment processor.
  */
-export function PurposeSection() {
-  if (!flags.missionCopyApproved) return null;
-  const c = home.purpose;
+export function PurposeSection({ c, approved }: { c: HomeCopy["purpose"]; approved: boolean }) {
+  if (!approved) return null;
   return (
     <section aria-labelledby="purpose-title" className="py-16 sm:py-24">
       <div className={`${container} grid items-center gap-10 lg:grid-cols-[1fr_1.2fr]`}>
@@ -113,8 +107,7 @@ export function PurposeSection() {
 }
 
 /** Section 5: Honor Her Memory (PRD §7.5). Pathway only, no card fields. */
-export function HonorSection() {
-  const c = home.honor;
+export function HonorSection({ c, currencies }: { c: HomeCopy["honor"]; currencies: readonly Currency[] }) {
   return (
     <section aria-labelledby="honor-title" className="px-2 py-16 sm:px-4 sm:py-24">
       <div className="relative mx-auto max-w-[88rem] overflow-hidden rounded-[2rem] bg-hero text-white shadow-2xl">
@@ -123,7 +116,7 @@ export function HonorSection() {
           <SectionHeading title={c.title} tone="dark" id="honor-title">
             <p>{c.body}</p>
           </SectionHeading>
-          <HomeHonorPicker currencies={enabledCurrencies} ctaLabel={c.cta} />
+          <HomeHonorPicker currencies={currencies} ctaLabel={c.cta} />
         </div>
       </div>
     </section>
@@ -131,10 +124,7 @@ export function HonorSection() {
 }
 
 /** Section 6: Memories & Messages (PRD §7.6). Approved messages only. */
-export function MemoriesSection() {
-  const c = home.memories;
-  // Approved public messages come from moderation (M2/M3). None exist yet.
-  const approved: { id: string; message: string; name?: string }[] = [];
+export function MemoriesSection({ c, memories }: { c: HomeCopy["memories"]; memories: PublicMemory[] }) {
   return (
     <section aria-labelledby="memories-title" className="pb-16 sm:pb-24">
       <div className={`${container} grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16`}>
@@ -142,14 +132,22 @@ export function MemoriesSection() {
           <p>{c.body}</p>
         </SectionHeading>
         <div className="flex flex-col justify-center gap-6">
-          {approved.length === 0 ? (
+          {memories.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-violet/30 bg-white/70 px-6 py-10 text-center">
               <span aria-hidden="true" className="font-display text-5xl leading-none text-gold">
                 “
               </span>
               <p className="font-display text-2xl text-ink/80 italic">{c.empty}</p>
             </div>
-          ) : null}
+          ) : (
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {memories.slice(0, 4).map((m) => (
+                <li key={m.id}>
+                  <MemoryCard memory={m} />
+                </li>
+              ))}
+            </ul>
+          )}
           <div>
             <ButtonLink href={c.cta.href} variant="outline-dark" arrow>
               {c.cta.label}
@@ -161,10 +159,27 @@ export function MemoriesSection() {
   );
 }
 
+/** One approved message. Name and connection only if the visitor opted in. */
+export function MemoryCard({ memory }: { memory: PublicMemory }) {
+  return (
+    <figure className="h-full rounded-2xl bg-white p-6 shadow-sm ring-1 ring-ink/5">
+      <span aria-hidden="true" className="font-display text-4xl leading-none text-gold">
+        “
+      </span>
+      <blockquote className="-mt-2 whitespace-pre-line text-ink/85">{memory.message}</blockquote>
+      {memory.name && (
+        <figcaption className="mt-4 text-sm font-semibold text-violet">
+          — {memory.name}
+          {memory.relationship && <span className="font-normal text-ink/70">, {memory.relationship}</span>}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 /** Section 7: Photo Gallery (PRD §7.7). Family-approved photographs only. */
-export function GallerySection() {
-  const c = home.gallery;
-  const photos = galleryPhotos.slice(0, 5);
+export function GallerySection({ c, photos: all }: { c: HomeCopy["gallery"]; photos: GalleryPhoto[] }) {
+  const photos = all.slice(0, 6);
   return (
     <section aria-labelledby="gallery-title" className="border-t border-ink/10 py-16 sm:py-24">
       <div className={`${container} grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16`}>
@@ -204,8 +219,7 @@ export function GallerySection() {
 }
 
 /** Section 8: Final CTA (PRD §7.8). Deep purple closing band. */
-export function FinalCtaSection() {
-  const c = home.finalCta;
+export function FinalCtaSection({ c }: { c: HomeCopy["finalCta"] }) {
   return (
     <section aria-labelledby="final-title" className="relative overflow-hidden bg-plum text-white">
       <CurvedDivider fill="var(--color-plum)" className="bg-ivory" />
