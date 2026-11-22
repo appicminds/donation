@@ -1,9 +1,26 @@
 import { Hero } from "@/components/home/Hero";
+import {
+  FinalCtaSection,
+  GallerySection,
+  HonorSection,
+  LegacySection,
+  MemoriesSection,
+  PurposeSection,
+  RememberingSection,
+} from "@/components/home/Sections";
 
-/**
- * Homepage. M0 ships Section 1 (Hero) to exercise the design system.
- * Sections 2–8 arrive in M1 (see PLAN.md), and the footer is global.
- */
+/** Homepage: the nine agreed sections in order (PRD §7). Section 9, the footer, is global. */
 export default function HomePage() {
-  return <Hero />;
+  return (
+    <>
+      <Hero />
+      <RememberingSection />
+      <LegacySection />
+      <PurposeSection />
+      <HonorSection />
+      <MemoriesSection />
+      <GallerySection />
+      <FinalCtaSection />
+    </>
+  );
 }

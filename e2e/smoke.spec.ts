@@ -6,9 +6,13 @@ test.describe("site shell", () => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1, name: "Forever Comfort" })).toBeVisible();
     await expect(page.getByText("In Loving Memory of Comfort Kwaw")).toBeVisible();
-    await expect(page.getByRole("img", { name: /Portrait of Comfort Kwaw/ })).toBeVisible();
+    await expect(
+      page
+        .getByRole("region", { name: "Forever Comfort", exact: true })
+        .getByRole("img", { name: /Portrait of Comfort Kwaw/ }),
+    ).toBeVisible();
 
-    const main = page.getByRole("main");
+    const main = page.getByRole("region", { name: "Forever Comfort", exact: true });
     await expect(main.getByRole("link", { name: "Honor Comfort Kwaw" })).toHaveAttribute("href", "/honor");
     await expect(main.getByRole("link", { name: "Share a Memory" })).toHaveAttribute("href", "/memories");
   });

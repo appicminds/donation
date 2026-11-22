@@ -108,3 +108,4 @@ Nothing below blocks the build. All of it blocks launch.
 ## 8. Status
 
 - **M0: done.** Next.js 16 + Tailwind 4 scaffold, brand tokens, fonts, UI primitives, header with mobile menu and footer, hero section, 404 and error pages, money helpers with unit tests, Playwright smoke and axe tests, CI workflow. Payload/Postgres setup moved to the start of M2, where the CMS is first needed; M1 reads copy from `src/content/`.
+- **M1: done.** Homepage Sections 1–8 in PRD order (the Purpose section is built but hidden behind `missionCopyApproved`), plus `/legacy`, `/honor` (currency, presets, custom amount and summary; payment stays disabled), `/memories`, `/gallery` (accessible lightbox), `/contact`, and draft `/privacy`, `/terms` and `/payment-information`, plus `/accessibility`. Launch flags live in `src/content/flags.ts`. Forms for memories, photos and contact are M3.
