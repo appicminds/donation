@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/*
+ * Brand tokens — PRD §6.3 (starting values, to be validated in Figma).
+ * Exposed to Tailwind as bg-plum, text-gold, etc.
+ */
+@theme {
+  --color-plum: #260b35; /* Deep plum: hero, footer, dark panels */
+  --color-royal: #421052; /* Royal purple: gradient midpoint, cards, nav accents */
+  --color-violet: #70228a; /* Violet: secondary gradient, interactive accents */
+  --color-lilac: #dfa6e9; /* Soft lilac: fine highlights, glow */
+  --color-gold: #d8b45a; /* Champagne gold: rules, emphasis, CTA details */
+  --color-gold-strong: #e6c574;
+  --color-ivory: #fbf7f2; /* Warm ivory: light content sections */
+  --color-ink: #32133d; /* Ink plum: text on light backgrounds */
+
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --container-site: 80rem; /* ≈1280px max content width (§6.5) */
+
+  --animate-fade-up: fade-up 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-lilac);
+    color: var(--color-plum);
+  }
+}
+
+/* Section 6.6: respect reduced-motion and provide a static equivalent. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@utility bg-hero {
+  background:
+    radial-gradient(60% 70% at 72% 40%, rgb(112 34 138 / 0.55), transparent 70%),
+    radial-gradient(40% 50% at 10% 90%, rgb(66 16 82 / 0.8), transparent 70%),
+    linear-gradient(160deg, var(--color-plum) 0%, var(--color-royal) 55%, var(--color-plum) 100%);
+}
+
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
