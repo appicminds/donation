@@ -93,9 +93,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   return withFallback(settingsFallback, async () => {
     const payload = await payloadClient();
     const s = await payload.findGlobal({ slug: "site-settings", overrideAccess: true, depth: 0 });
-    const flags = Object.fromEntries(
+    const stored = Object.fromEntries(
       Object.keys(flagFallback).map((k) => [k, Boolean((s as unknown as Record<string, unknown>)[k])]),
     ) as SiteSettings["flags"];
+    // Vercel has no lasting disk: without Blob storage uploads would fail, so keep photo sharing closed.
+    const photoStorageMissing = Boolean(process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN);
+    const flags = { ...stored, photoSubmissionsEnabled: stored.photoSubmissionsEnabled && !photoStorageMissing };
     return {
       flags,
       currencies: flags.gbpEnabled ? ["USD", "GBP"] : ["USD"],

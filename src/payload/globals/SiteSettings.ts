@@ -63,7 +63,11 @@ export const SiteSettings: GlobalConfig = {
           "Memory submissions open",
           "Only switch on when moderators are assigned and a review time is agreed.",
         ),
-        flag("photoSubmissionsEnabled", "Photo submissions open", "Visitor photo uploads (pending review)."),
+        flag(
+          "photoSubmissionsEnabled",
+          "Photo submissions open",
+          "Visitor photo uploads (pending review). Stays closed on the live site until photo storage (Vercel Blob) is connected.",
+        ),
         flag("contactFormEnabled", "Contact form open", "Requires a verified support inbox."),
       ],
     },
