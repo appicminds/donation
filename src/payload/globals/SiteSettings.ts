@@ -3,6 +3,7 @@ import { auditGlobalChange } from "../audit";
 import { revalidateCms } from "../revalidate";
 import { hasRole, isStaff, isSuperAdmin } from "../roles";
 import { missingDisclosures, resolvePaymentsSwitch } from "../rules";
+import { stripeTestMode } from "@/lib/payments/stripe";
 import { flags as defaults } from "@/content/flags";
 
 const superOnly = { update: ({ req }: { req: { user?: unknown } }) => isSuperAdmin(req.user as never) };
@@ -40,7 +41,7 @@ export const SiteSettings: GlobalConfig = {
         flag(
           "paymentsEnabled",
           "Payments enabled",
-          "Requires two super administrators: the first request is recorded, a second person confirms. Only switch on after legal, processor and production approvals (Gates B–D).",
+          "With live Stripe keys this needs two super administrators: the first request is recorded, a second person confirms. With Stripe test keys one super administrator can switch it on. Only switch on for real after legal, processor and production approvals (Gates B–D).",
         ),
         {
           name: "paymentsEnableRequestedBy",
@@ -196,7 +197,9 @@ export const SiteSettings: GlobalConfig = {
             400,
           );
         }
-        const result = resolvePaymentsSwitch(originalDoc ?? {}, data, req.user.id);
+        const result = resolvePaymentsSwitch(originalDoc ?? {}, data, req.user.id, {
+          stripeTestMode: stripeTestMode(),
+        });
         data.paymentsEnabled = result.paymentsEnabled;
         data.paymentsEnableRequestedBy = result.paymentsEnableRequestedBy;
         return data;

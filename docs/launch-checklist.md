@@ -40,7 +40,7 @@ Based on PRD §17.1 and the approval gates in §19.1. ✅ done · ⏳ waiting on
 | USD and GBP test-mode suite passing                                       | ✅     | Automated: success, settlement and FX, duplicate/out-of-order events, forged signatures, refunds, declines |
 | One manual card payment in the browser on the live test site (card 4242…) | ⏳     | Not possible inside the build sandbox; please do this once                                                 |
 | Small live transactions made and reconciled with the finance export       | ⬜     | After Gate C                                                                                               |
-| Two super admins exist (needed to switch payments on)                     | ⏳     | Owner                                                                                                      |
+| Two super admins exist (needed to switch payments on with live keys)      | ⏳     | Owner                                                                                                      |
 | MFA enforced, least-privilege roles, audit log                            | ✅     |                                                                                                            |
 | Backups and restore drill                                                 | ✅     | Drill on 23 Nov 2026; see the runbook. Repeat once on Neon.                                                |
 | Monitoring                                                                | ⏳     | Point an uptime monitor at `/api/health`; optional log drain or Sentry                                     |

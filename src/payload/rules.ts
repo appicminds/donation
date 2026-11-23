@@ -55,11 +55,15 @@ const idOf = (v: PaymentsSwitchState["paymentsEnableRequestedBy"]) => (v && type
  * Two-person rule for switching payments on (PRD §4.1, §18). The first super
  * admin's request is recorded. A *different* super admin must then confirm.
  * Switching payments off is always allowed immediately.
+ *
+ * With Stripe TEST keys no real money can move, so on a test site one super
+ * admin may switch payments on directly. Live keys always need two people.
  */
 export function resolvePaymentsSwitch(
   previous: PaymentsSwitchState,
   requested: PaymentsSwitchState,
   userId: string | number,
+  options: { stripeTestMode?: boolean } = {},
 ): { paymentsEnabled: boolean; paymentsEnableRequestedBy: string | number | null; message: string | null } {
   const wasOn = Boolean(previous.paymentsEnabled);
   const wantsOn = Boolean(requested.paymentsEnabled);
@@ -67,6 +71,7 @@ export function resolvePaymentsSwitch(
 
   if (!wantsOn) return { paymentsEnabled: false, paymentsEnableRequestedBy: null, message: null };
   if (wasOn) return { paymentsEnabled: true, paymentsEnableRequestedBy: null, message: null };
+  if (options.stripeTestMode) return { paymentsEnabled: true, paymentsEnableRequestedBy: null, message: null };
   if (pendingBy !== null && String(pendingBy) !== String(userId)) {
     return { paymentsEnabled: true, paymentsEnableRequestedBy: null, message: null };
   }

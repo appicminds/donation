@@ -4,6 +4,9 @@ let client: Stripe | null = null;
 
 export const stripeConfigured = () => Boolean(process.env.STRIPE_SECRET_KEY);
 
+/** Test keys: no real money can move. */
+export const stripeTestMode = () => Boolean(process.env.STRIPE_SECRET_KEY?.startsWith("sk_test_"));
+
 /** Live keys are refused unless explicitly allowed (Gate D: production approval). */
 export const liveModeAllowed = () => process.env.STRIPE_ALLOW_LIVE === "true";
 

@@ -71,6 +71,20 @@ describe("two-person payments switch", () => {
     expect(r.paymentsEnabled).toBe(false);
   });
 
+  it("lets one admin switch on directly with Stripe test keys", () => {
+    const r = resolvePaymentsSwitch({ paymentsEnabled: false }, { paymentsEnabled: true }, "a", {
+      stripeTestMode: true,
+    });
+    expect(r).toEqual({ paymentsEnabled: true, paymentsEnableRequestedBy: null, message: null });
+  });
+
+  it("still needs a second admin with live keys", () => {
+    const r = resolvePaymentsSwitch({ paymentsEnabled: false }, { paymentsEnabled: true }, "a", {
+      stripeTestMode: false,
+    });
+    expect(r.paymentsEnabled).toBe(false);
+  });
+
   it("enables when a different admin confirms", () => {
     const r = resolvePaymentsSwitch(
       { paymentsEnabled: false, paymentsEnableRequestedBy: { id: "a" } },
