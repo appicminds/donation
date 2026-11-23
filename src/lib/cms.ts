@@ -206,7 +206,7 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
         ],
       },
     });
-    return docs
+    const photos = docs
       .filter((d) => d.url && d.width && d.height && d.alt)
       .map((d) => ({
         id: String(d.id),
@@ -216,5 +216,8 @@ export async function getGalleryPhotos(): Promise<GalleryPhoto[]> {
         alt: d.alt!,
         caption: d.caption || undefined,
       }));
+    // Until the family approves photos in the CMS, keep showing the built-in
+    // (owner-approved) portrait rather than an empty gallery.
+    return photos.length ? photos : galleryFallback;
   });
 }

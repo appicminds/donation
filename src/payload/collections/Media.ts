@@ -142,6 +142,18 @@ export const Media: CollectionConfig = {
     { name: "reviewedAt", type: "date", admin: { position: "sidebar", readOnly: true } },
   ],
   hooks: {
+    beforeOperation: [
+      ({ operation, args }) => {
+        // Vercel has no lasting disk: uploads need Vercel Blob (BLOB_READ_WRITE_TOKEN).
+        if (operation === "create" && process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+          throw new APIError(
+            "Photo storage is not set up yet, so images can't be uploaded on the live site. Connect Vercel Blob to enable uploads.",
+            503,
+          );
+        }
+        return args;
+      },
+    ],
     beforeChange: [
       ({ data, originalDoc, req }) => {
         const merged = { ...originalDoc, ...data };

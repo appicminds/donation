@@ -78,6 +78,8 @@ Set these in Vercel → Project → Settings → Environment Variables (or via t
 
 Migrations run automatically when the app starts in production.
 
+**Photo storage:** Vercel servers have no lasting disk, so uploads (admin images and visitor photos) need Vercel Blob. Until it is connected, uploads on the live site are refused with a clear message, and the gallery shows the built-in portrait.
+
 ## Scripts
 
 | Command                           | What it does                                                       |
