@@ -34,7 +34,8 @@ export function GlowPortrait({ src, alt, width, height, priority, sizes, classNa
         alt={alt}
         width={width}
         height={height}
-        priority={priority}
+        // Next 16: `priority` is deprecated; mark the hero portrait as the urgent (LCP) image instead.
+        {...(priority ? { fetchPriority: "high" as const, loading: "eager" as const } : {})}
         sizes={sizes ?? "(min-width: 1024px) 50vw, 100vw"}
         className="h-auto w-full"
         style={{ maskImage: FADE, WebkitMaskImage: FADE }}

@@ -130,6 +130,14 @@ src/lib/            utilities, e.g. money helpers (minor units, no mixed currenc
 e2e/                Playwright tests
 ```
 
+## Operations and launch
+
+- [`docs/runbook.md`](docs/runbook.md): monitoring (`/api/health`), deploys and rollback, backups and the restore drill (`scripts/db-backup.sh`, `scripts/db-restore.sh`), incident playbooks and secret rotation.
+- [`docs/launch-checklist.md`](docs/launch-checklist.md): every launch item against the PRD's approval gates, with its status and owner.
+- [`docs/prd-addendum-donor-accounts.md`](docs/prd-addendum-donor-accounts.md): donor account requirements.
+
+Security headers (CSP, frame blocking, HSTS on Vercel, and more) are set in `next.config.ts`. Server errors are logged as JSON through `src/instrumentation.ts`.
+
 ## Content rules (from the PRD)
 
 - Do not invent biography facts, dates, testimonials, totals or donor counts.

@@ -1,7 +1,9 @@
 "use client";
 
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { loadStripe, type Stripe as StripeJs } from "@stripe/stripe-js";
+// "pure" defers loading Stripe.js until checkout reaches the payment step.
+import type { Stripe as StripeJs } from "@stripe/stripe-js";
+import { loadStripe } from "@stripe/stripe-js/pure";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { CheckboxField, TextArea, TextField } from "@/components/forms/fields";

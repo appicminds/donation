@@ -50,3 +50,6 @@ next-env.d.ts
 # local scratch scripts
 /.scratch
 /media
+
+# database backups (never commit)
+/backups
