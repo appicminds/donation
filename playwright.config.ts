@@ -15,6 +15,8 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run start -- -p ${PORT}`,
+    // Test-only: lets donor sign-in run without an email provider (links are logged).
+    env: { ALLOW_CONSOLE_EMAIL: "1" },
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -129,7 +129,7 @@ export async function startHonor(input: StartHonorInput): Promise<StartHonorResu
       amountMinor: amount.amountMinor,
       currency: amount.currency,
       frequency: "one_time",
-      donorEmail: parsed.data.email,
+      donorEmail: parsed.data.email.toLowerCase(),
       donorName: parsed.data.name,
       showName: Boolean(input.showName),
       memorialNote: parsed.data.note,

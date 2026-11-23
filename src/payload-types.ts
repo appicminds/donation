@@ -73,6 +73,7 @@ export interface Config {
     payments: Payment;
     refunds: Refund;
     'payment-events': PaymentEvent;
+    'donor-login-tokens': DonorLoginToken;
     users: User;
     'audit-logs': AuditLog;
     'totp-attempts': TotpAttempt;
@@ -89,6 +90,7 @@ export interface Config {
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payment-events': PaymentEventsSelect<false> | PaymentEventsSelect<true>;
+    'donor-login-tokens': DonorLoginTokensSelect<false> | DonorLoginTokensSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'totp-attempts': TotpAttemptsSelect<false> | TotpAttemptsSelect<true>;
@@ -374,6 +376,20 @@ export interface PaymentEvent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-login-tokens".
+ */
+export interface DonorLoginToken {
+  id: number;
+  tokenHash: string;
+  email: string;
+  expiresAt: string;
+  usedAt?: string | null;
+  ipHash?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
 export interface AuditLog {
@@ -452,6 +468,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'payment-events';
         value: number | PaymentEvent;
+      } | null)
+    | ({
+        relationTo: 'donor-login-tokens';
+        value: number | DonorLoginToken;
       } | null)
     | ({
         relationTo: 'users';
@@ -668,6 +688,19 @@ export interface PaymentEventsSelect<T extends boolean = true> {
   verified?: T;
   outcome?: T;
   objectId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donor-login-tokens_select".
+ */
+export interface DonorLoginTokensSelect<T extends boolean = true> {
+  tokenHash?: T;
+  email?: T;
+  expiresAt?: T;
+  usedAt?: T;
+  ipHash?: T;
   updatedAt?: T;
   createdAt?: T;
 }

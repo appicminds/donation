@@ -37,6 +37,7 @@ export const legalNav: NavItem[] = [
   { label: "Terms of Use", href: "/terms" },
   { label: "Payment Information", href: "/payment-information" },
   { label: "Accessibility", href: "/accessibility" },
+  { label: "Donor account", href: "/account" },
 ];
 
 export const portrait = {

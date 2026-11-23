@@ -56,6 +56,17 @@ The checkout runs **amount → your details → review and pay**, with Stripe's 
 
 **Testing locally:** run `SEED_OPEN_PAYMENTS=1 npm run seed` to open payments with clearly labelled _TEST_ placeholder disclosures (never in production). `e2e/payments.spec.ts` runs real Stripe test payments and delivers Stripe's actual events, signed, to the webhook. It's skipped when Stripe test keys aren't set.
 
+## Donor accounts
+
+Specified in [`docs/prd-addendum-donor-accounts.md`](docs/prd-addendum-donor-accounts.md).
+
+- **Sign-in:** donors sign in at `/account` with an emailed link. There are no passwords.
+- **Links:** each link is single-use, expires in 20 minutes, and is stored only as a hash. Opening the link shows a **Continue** button, so email security scanners that open links can't use them up. Requests always get the same answer, so nobody can tell whether an email has given. Rate limits: 3 per hour per email, 5 per hour per connection.
+- **Session:** a signed, HttpOnly cookie lasting up to 12 hours (`__Host-` prefixed in production), with Sign out.
+- **What donors see:** their own payments only (exact email match, case-insensitive), with receipt and status links, plus a switch for showing their name publicly. Consent changes and sign-ins go to the audit log.
+- **Emails:** receipt and refund emails include a secure link back to the receipt or status page.
+- **Live dependency:** sign-in links need an email provider (`RESEND_API_KEY`). Until one is set, the page explains that sign-in isn't available yet.
+
 ## Finance overview and exports
 
 Finance staff (two-step login required) see **Finance overview** in the admin sidebar (`/admin/finance`):

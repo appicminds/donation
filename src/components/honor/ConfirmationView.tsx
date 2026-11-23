@@ -65,6 +65,13 @@ export function ConfirmationView({ initial, token }: { initial: HonorStatus; tok
               Return to Memorial
             </ButtonLink>
           </div>
+          <p className="text-sm text-ink/75">
+            You can find this receipt again at any time in your{" "}
+            <a href="/account" className="text-violet underline underline-offset-4">
+              donor account
+            </a>
+            .
+          </p>
         </>
       )}
 

@@ -9,13 +9,25 @@ import type { Payload } from "payload";
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export function layout(title: string, paragraphs: string[]) {
-  const text = [title, "", ...paragraphs, "", "With gratitude,", "The family of Comfort Kwaw"].join("\n");
+/** A paragraph of text, or a button-style link. */
+export type EmailBlock = string | { label: string; href: string };
+
+const isSafeHref = (href: string) => /^https:\/\//.test(href) || /^http:\/\/localhost(:\d+)?\//.test(href);
+
+export function layout(title: string, blocks: EmailBlock[]) {
+  const asText = (b: EmailBlock) => (typeof b === "string" ? b : `${b.label}: ${b.href}`);
+  const asHtml = (b: EmailBlock) =>
+    typeof b === "string"
+      ? `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">${escape(b)}</p>`
+      : isSafeHref(b.href)
+        ? `<p style="margin:20px 0"><a href="${escape(b.href)}" style="display:inline-block;background:#D8B45A;color:#260B35;font-family:Arial,sans-serif;font-weight:bold;font-size:15px;text-decoration:none;padding:12px 22px;border-radius:999px">${escape(b.label)}</a></p>`
+        : "";
+  const text = [title, "", ...blocks.map(asText), "", "With gratitude,", "The family of Comfort Kwaw"].join("\n");
   const html = `<!doctype html><html><body style="margin:0;background:#FBF7F2;font-family:Georgia,serif;color:#32133D">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px">
 <p style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#70228A;margin:0 0 8px">Comfort Kwaw Memorial Fund</p>
 <h1 style="font-size:26px;font-weight:600;margin:0 0 20px">${escape(title)}</h1>
-${paragraphs.map((p) => `<p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6">${escape(p)}</p>`).join("\n")}
+${blocks.map(asHtml).join("\n")}
 <p style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;margin-top:24px">With gratitude,<br>The family of Comfort Kwaw</p>
 <p style="font-style:italic;color:#70228A;margin-top:32px">Forever Comfort — An Eternal Legacy</p>
 </div></body></html>`;
