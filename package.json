@@ -28,6 +28,8 @@
     "@payloadcms/storage-vercel-blob": "^3.94.1",
     "@payloadcms/translations": "^3.94.1",
     "@payloadcms/ui": "^3.94.1",
+    "@stripe/react-stripe-js": "^7.1.0",
+    "@stripe/stripe-js": "^10.3.0",
     "graphql": "^16.15.0",
     "next": "16.4.6",
     "payload": "^3.94.1",
@@ -36,6 +38,7 @@
     "react-dom": "^19.3.1",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
+    "stripe": "^23.2.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {

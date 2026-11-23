@@ -1,8 +1,8 @@
-import type { Field, GlobalConfig } from "payload";
+import { APIError, type Field, type GlobalConfig } from "payload";
 import { auditGlobalChange } from "../audit";
 import { revalidateCms } from "../revalidate";
 import { hasRole, isStaff, isSuperAdmin } from "../roles";
-import { resolvePaymentsSwitch } from "../rules";
+import { missingDisclosures, resolvePaymentsSwitch } from "../rules";
 import { flags as defaults } from "@/content/flags";
 
 const superOnly = { update: ({ req }: { req: { user?: unknown } }) => isSuperAdmin(req.user as never) };
@@ -91,6 +91,49 @@ export const SiteSettings: GlobalConfig = {
     },
     {
       type: "collapsible",
+      label: "Payment disclosures (shown before payment)",
+      admin: {
+        description:
+          "Required before payments can be switched on (PRD §8.2, §9). Use only wording approved by counsel and the payment processor.",
+      },
+      fields: [
+        {
+          name: "legalRecipient",
+          type: "text",
+          label: "Legal recipient of payments",
+          access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+        },
+        {
+          name: "paymentClassification",
+          type: "textarea",
+          label: "Payment classification",
+          access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+          admin: { description: "For example, whether this is a personal gift, a fund contribution, etc." },
+        },
+        {
+          name: "purposeDisclosure",
+          type: "textarea",
+          label: "Purpose disclosure",
+          access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+        },
+        {
+          name: "taxStatement",
+          type: "textarea",
+          label: "Tax status statement",
+          defaultValue:
+            "This is a payment confirmation, not a charitable tax receipt unless separately stated by an eligible organization.",
+          access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+        },
+        {
+          name: "refundPolicy",
+          type: "textarea",
+          label: "Refund policy summary",
+          access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+        },
+      ],
+    },
+    {
+      type: "collapsible",
       label: "Contact",
       fields: [
         {
@@ -112,6 +155,14 @@ export const SiteSettings: GlobalConfig = {
     beforeChange: [
       ({ data, originalDoc, req }) => {
         if (!req.user) return data;
+        const merged = { ...originalDoc, ...data };
+        const missing = missingDisclosures(merged);
+        if (data.paymentsEnabled && !originalDoc?.paymentsEnabled && missing.length) {
+          throw new APIError(
+            `Complete the payment disclosures before switching payments on: ${missing.join(", ")}.`,
+            400,
+          );
+        }
         const result = resolvePaymentsSwitch(originalDoc ?? {}, data, req.user.id);
         data.paymentsEnabled = result.paymentsEnabled;
         data.paymentsEnableRequestedBy = result.paymentsEnableRequestedBy;

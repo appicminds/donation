@@ -76,3 +76,18 @@ export function resolvePaymentsSwitch(
     message: "Request recorded. A second super administrator must confirm before payments are switched on.",
   };
 }
+
+const DISCLOSURES = {
+  legalRecipient: "legal recipient",
+  paymentClassification: "payment classification",
+  purposeDisclosure: "purpose disclosure",
+  taxStatement: "tax status statement",
+  refundPolicy: "refund policy",
+} as const;
+
+/** PRD §8.2: recipient, classification, tax status and refund terms must be visible before payment. */
+export function missingDisclosures(settings: Partial<Record<keyof typeof DISCLOSURES, string | null>>): string[] {
+  return Object.entries(DISCLOSURES)
+    .filter(([key]) => !settings[key as keyof typeof DISCLOSURES]?.trim())
+    .map(([, label]) => label);
+}

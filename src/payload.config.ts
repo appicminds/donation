@@ -11,6 +11,7 @@ import { AuditLogs } from "./payload/collections/AuditLogs";
 import { ContactMessages } from "./payload/collections/ContactMessages";
 import { Media } from "./payload/collections/Media";
 import { Memories } from "./payload/collections/Memories";
+import { PaymentEvents, Payments, Refunds } from "./payload/collections/Payments";
 import { Users } from "./payload/collections/Users";
 import { HomepageContent, LegacyContent } from "./payload/globals/content";
 import { SiteSettings } from "./payload/globals/SiteSettings";
@@ -25,7 +26,7 @@ export default buildConfig({
     meta: { titleSuffix: " · Comfort Kwaw Memorial Fund admin" },
     importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Memories, Media, ContactMessages, Users, AuditLogs],
+  collections: [Memories, Media, ContactMessages, Payments, Refunds, PaymentEvents, Users, AuditLogs],
   globals: [HomepageContent, LegacyContent, SiteSettings],
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL },

@@ -51,4 +51,22 @@ if (process.env.SEED_OPEN_FORMS === "1") {
   payload.logger.info("Seed: visitor forms opened (SEED_OPEN_FORMS=1).");
 }
 
+// Test environments only: open payments with clearly labelled placeholder disclosures.
+// Production disclosures must come from counsel and the processor (Gates B–C).
+if (process.env.SEED_OPEN_PAYMENTS === "1") {
+  const placeholder = "TEST ENVIRONMENT ONLY. Placeholder pending legal approval.";
+  await payload.updateGlobal({
+    slug: "site-settings",
+    overrideAccess: true,
+    data: {
+      paymentsEnabled: true,
+      legalRecipient: placeholder,
+      paymentClassification: placeholder,
+      purposeDisclosure: placeholder,
+      refundPolicy: placeholder,
+    },
+  });
+  payload.logger.info("Seed: payments opened with TEST placeholder disclosures (SEED_OPEN_PAYMENTS=1).");
+}
+
 process.exit(0);

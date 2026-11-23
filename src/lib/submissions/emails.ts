@@ -9,7 +9,7 @@ import type { Payload } from "payload";
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-function layout(title: string, paragraphs: string[]) {
+export function layout(title: string, paragraphs: string[]) {
   const text = [title, "", ...paragraphs, "", "With gratitude,", "The family of Comfort Kwaw"].join("\n");
   const html = `<!doctype html><html><body style="margin:0;background:#FBF7F2;font-family:Georgia,serif;color:#32133D">
 <div style="max-width:560px;margin:0 auto;padding:32px 24px">
@@ -22,7 +22,12 @@ ${paragraphs.map((p) => `<p style="font-family:Arial,sans-serif;font-size:15px;l
   return { text, html };
 }
 
-async function send(payload: Payload, to: string | string[], subject: string, body: { text: string; html: string }) {
+export async function send(
+  payload: Payload,
+  to: string | string[],
+  subject: string,
+  body: { text: string; html: string },
+) {
   try {
     await payload.sendEmail({ to, subject, ...body });
   } catch (error) {

@@ -61,13 +61,30 @@ export type SiteSettings = {
   currencies: readonly Currency[];
   customAmount: { min: number; max: number };
   supportEmail: string | null;
+  disclosures: {
+    legalRecipient: string | null;
+    paymentClassification: string | null;
+    purposeDisclosure: string | null;
+    taxStatement: string;
+    refundPolicy: string | null;
+  };
 };
+
+const DEFAULT_TAX_STATEMENT =
+  "This is a payment confirmation, not a charitable tax receipt unless separately stated by an eligible organization.";
 
 const settingsFallback: SiteSettings = {
   flags: { ...flagFallback },
   currencies: flagFallback.gbpEnabled ? ["USD", "GBP"] : ["USD"],
   customAmount: { ...CUSTOM_AMOUNT_LIMITS },
   supportEmail: site.supportEmail,
+  disclosures: {
+    legalRecipient: null,
+    paymentClassification: null,
+    purposeDisclosure: null,
+    taxStatement: DEFAULT_TAX_STATEMENT,
+    refundPolicy: null,
+  },
 };
 
 export async function getSiteSettings(): Promise<SiteSettings> {
@@ -84,6 +101,13 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       currencies: flags.gbpEnabled ? ["USD", "GBP"] : ["USD"],
       customAmount: { min: s.customAmountMin ?? 1, max: s.customAmountMax ?? CUSTOM_AMOUNT_LIMITS.max },
       supportEmail: s.supportEmail || null,
+      disclosures: {
+        legalRecipient: s.legalRecipient || null,
+        paymentClassification: s.paymentClassification || null,
+        purposeDisclosure: s.purposeDisclosure || null,
+        taxStatement: s.taxStatement || DEFAULT_TAX_STATEMENT,
+        refundPolicy: s.refundPolicy || null,
+      },
     };
   });
 }

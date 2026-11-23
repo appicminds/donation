@@ -11,22 +11,29 @@ import { hashIp } from "../src/lib/submissions/antiabuse";
 const DB = process.env.DATABASE_URL;
 test.skip(!DB || !process.env.PAYLOAD_SECRET, "needs DATABASE_URL and PAYLOAD_SECRET");
 test.describe.configure({ mode: "serial" });
+// Server actions can be slow while other suites run in parallel.
+test.use({ actionTimeout: 15_000 });
+const SLOW = { timeout: 15_000 };
 test.beforeEach(({ isMobile }) => test.skip(isMobile, "desktop only"));
 
 const MARK = "E2E-TEST";
 let db: pg.Client;
 
-test.beforeAll(async () => {
+test.beforeAll(async ({}, info) => {
+  // Hooks run even when every test is skipped; only the desktop project touches the database.
+  if (info.project.name !== "desktop") return;
   db = new pg.Client({ connectionString: DB });
   await db.connect();
   await cleanup();
 });
-test.afterAll(async () => {
+test.afterAll(async ({}, info) => {
+  if (info.project.name !== "desktop") return;
   await cleanup();
   await db?.end();
 });
 
 async function cleanup() {
+  if (process.env.E2E_KEEP) return; // debugging: keep rows for inspection
   await db.query(`delete from memories where message like $1`, [`${MARK}%`]);
   await db.query(`delete from contact_messages where message like $1`, [`${MARK}%`]);
   await db.query(`delete from media where origin = 'visitor' and (caption like $1 or visitor_name like $1)`, [
@@ -51,7 +58,7 @@ test("memory form validates, then stores a pending, private submission", async (
   await humanPause(page);
 
   await form.getByRole("button", { name: "Submit Memory" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Please check the highlighted fields.");
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText("Please check the highlighted fields.", SLOW);
   const message = form.getByLabel("Your message");
   await expect(message).toHaveAttribute("aria-invalid", "true");
   await expect(form.getByText("Please share your message.")).toBeVisible();
@@ -60,7 +67,7 @@ test("memory form validates, then stores a pending, private submission", async (
   await message.fill(`${MARK} She always had time for everyone.`);
   await form.getByLabel("I give permission for my message to appear publicly after family review.").check();
   await form.getByRole("button", { name: "Submit Memory" }).click();
-  await expect(page.getByRole("main").getByRole("status")).toContainText("will appear after review, if approved");
+  await expect(page.getByRole("main").getByRole("status")).toContainText("will appear after review, if approved", SLOW);
 
   const { rows } = await db.query(
     `select status, public_consent, show_name, ip_hash from memories where message like $1`,
@@ -93,7 +100,7 @@ test("memory with a photograph needs the rights confirmation, then stores a priv
     .setInputFiles({ name: "p.jpg", mimeType: "image/jpeg", buffer: await testImage() });
   await form.getByLabel("I have permission to share this photograph.").check();
   await form.getByRole("button", { name: "Submit Memory" }).click();
-  await expect(page.getByRole("main").getByRole("status")).toBeVisible();
+  await expect(page.getByRole("main").getByRole("status")).toBeVisible(SLOW);
 
   const { rows } = await db.query(
     `select m.status, md.approval_status, md.origin, md.visitor_consent, md.filename
@@ -128,7 +135,7 @@ test("photo form requires a file and rights, then stores a pending visitor photo
   await form.getByLabel(/I have permission to share this photograph, including/).check();
   await form.getByLabel(/appear publicly after family review/).check();
   await form.getByRole("button", { name: "Share a Photograph" }).click();
-  await expect(page.getByRole("main").getByRole("status")).toContainText("reviewed by the family");
+  await expect(page.getByRole("main").getByRole("status")).toContainText("reviewed by the family", SLOW);
 
   const { rows } = await db.query(
     `select approval_status, show_in_gallery, visitor_consent, rights_attested, rights_confirmed from media where caption like $1`,
@@ -170,7 +177,7 @@ test("contact form validates and stores the message", async ({ page }) => {
   await form.getByLabel("Topic").selectOption("payment");
   await form.getByLabel("Your message").fill(`${MARK} Question about a payment.`);
   await form.getByRole("button", { name: "Send Message" }).click();
-  await expect(page.getByRole("main").getByRole("status")).toContainText("We will respond as soon as we can.");
+  await expect(page.getByRole("main").getByRole("status")).toContainText("We will respond as soon as we can.", SLOW);
 
   const { rows } = await db.query(`select topic, status from contact_messages where message like $1`, [`${MARK}%`]);
   expect(rows).toEqual([{ topic: "payment", status: "new" }]);
@@ -185,7 +192,7 @@ test("bots filling the honeypot see success but nothing is stored", async ({ pag
   await form.getByLabel("Topic").selectOption("general");
   await form.getByLabel("Your message").fill(`${MARK} BOT`);
   await form.getByRole("button", { name: "Send Message" }).click();
-  await expect(page.getByRole("main").getByRole("status")).toBeVisible();
+  await expect(page.getByRole("main").getByRole("status")).toBeVisible(SLOW);
   const { rows } = await db.query(`select 1 from contact_messages where message = $1`, [`${MARK} BOT`]);
   expect(rows).toHaveLength(0);
 });
@@ -198,21 +205,28 @@ test("instant submissions are refused", async ({ page }) => {
   await form.getByLabel("Topic").selectOption("general");
   await form.getByLabel("Your message").fill(`${MARK} fast`);
   await form.getByRole("button", { name: "Send Message" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText("That was very quick");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("That was very quick", SLOW);
 });
 
 test("rate limit stops a flood from one address", async ({ page }) => {
-  // Fill this address's bucket directly (using the hash stored by the contact test), then try one more.
-  const { rows: prior } = await db.query(`select ip_hash from contact_messages where message like $1 limit 1`, [
-    `${MARK} Question%`,
+  // Fill the bucket for every form a local connection can take (IPv4/IPv6 loopback, or no
+  // forwarded address), so the next submission from this browser is over the limit.
+  const { rows: seen } = await db.query(
+    `select distinct ip_hash from contact_messages where ip_hash is not null
+     union select distinct ip_hash from memories where ip_hash is not null`,
+  );
+  const hashes = new Set<string>([
+    ...seen.map((r: { ip_hash: string }) => r.ip_hash),
+    ...[null, "::1", "127.0.0.1", "::ffff:127.0.0.1"].map((ip) => hashIp(ip)),
   ]);
-  const ip = prior[0]?.ip_hash ?? hashIp(null);
-  for (let i = 0; i < 5; i++) {
-    await db.query(
-      `insert into contact_messages (email, topic, message, status, ip_hash, updated_at, created_at)
-       values ('flood@example.test', 'general', $1, 'new', $2, now(), now())`,
-      [`${MARK} flood ${i}`, ip],
-    );
+  for (const ip of hashes) {
+    for (let i = 0; i < 5; i++) {
+      await db.query(
+        `insert into contact_messages (email, topic, message, status, ip_hash, updated_at, created_at)
+         values ('flood@example.test', 'general', $1, 'new', $2, now(), now())`,
+        [`${MARK} flood ${i}`, ip],
+      );
+    }
   }
   await page.goto("/contact");
   const form = page.getByRole("form", { name: "Send a message" });
@@ -221,5 +235,5 @@ test("rate limit stops a flood from one address", async ({ page }) => {
   await form.getByLabel("Topic").selectOption("general");
   await form.getByLabel("Your message").fill(`${MARK} one too many`);
   await form.getByRole("button", { name: "Send Message" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText("several submissions recently");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("several submissions recently", SLOW);
 });

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { hasRole, isSuperAdmin } from "./roles";
-import { checkMediaApproval, checkMemoryApproval, checkPublish, resolvePaymentsSwitch } from "./rules";
+import {
+  checkMediaApproval,
+  checkMemoryApproval,
+  checkPublish,
+  missingDisclosures,
+  resolvePaymentsSwitch,
+} from "./rules";
 
 const editor = { id: 1, roles: ["editor"] };
 const publisher = { id: 2, roles: ["publisher"] };
@@ -82,5 +88,25 @@ describe("two-person payments switch", () => {
       resolvePaymentsSwitch({ paymentsEnabled: false, paymentsEnableRequestedBy: "a" }, { paymentsEnabled: false }, "b")
         .paymentsEnableRequestedBy,
     ).toBeNull();
+  });
+});
+
+describe("payment disclosures", () => {
+  it("lists every missing disclosure", () => {
+    expect(missingDisclosures({ taxStatement: "Not a tax receipt." })).toEqual([
+      "legal recipient",
+      "payment classification",
+      "purpose disclosure",
+      "refund policy",
+    ]);
+    expect(
+      missingDisclosures({
+        legalRecipient: "X",
+        paymentClassification: "Y",
+        purposeDisclosure: "Z",
+        taxStatement: "T",
+        refundPolicy: "R",
+      }),
+    ).toEqual([]);
   });
 });

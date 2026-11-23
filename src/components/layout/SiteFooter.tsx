@@ -14,7 +14,7 @@ async function CopyrightYear() {
 export async function SiteFooter() {
   const { supportEmail } = await getSiteSettings();
   return (
-    <footer className="bg-plum text-white/80">
+    <footer className="bg-plum text-white/80 print:hidden">
       <div className="mx-auto grid max-w-site gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.3fr_1fr_1fr] lg:px-8">
         <div>
           <BrandMark />

@@ -70,6 +70,9 @@ export interface Config {
     memories: Memory;
     media: Media;
     'contact-messages': ContactMessage;
+    payments: Payment;
+    refunds: Refund;
+    'payment-events': PaymentEvent;
     users: User;
     'audit-logs': AuditLog;
     'totp-attempts': TotpAttempt;
@@ -83,6 +86,9 @@ export interface Config {
     memories: MemoriesSelect<false> | MemoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'contact-messages': ContactMessagesSelect<false> | ContactMessagesSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    refunds: RefundsSelect<false> | RefundsSelect<true>;
+    'payment-events': PaymentEventsSelect<false> | PaymentEventsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'totp-attempts': TotpAttemptsSelect<false> | TotpAttemptsSelect<true>;
@@ -269,6 +275,104 @@ export interface ContactMessage {
   createdAt: string;
 }
 /**
+ * Amounts are in minor units (cents/pence). Status changes only through verified Stripe webhooks.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: number;
+  receiptRef: string;
+  accessToken: string;
+  idempotencyKey?: string | null;
+  ipHash?: string | null;
+  status:
+    | 'created'
+    | 'requires_payment'
+    | 'processing'
+    | 'succeeded'
+    | 'failed'
+    | 'canceled'
+    | 'partially_refunded'
+    | 'refunded'
+    | 'disputed';
+  amountMinor: number;
+  currency: 'USD' | 'GBP';
+  frequency?: 'one_time' | null;
+  donorEmail?: string | null;
+  donorName?: string | null;
+  /**
+   * Private by default. Amounts are never shown publicly.
+   */
+  showName?: boolean | null;
+  memorialNote?: string | null;
+  stripePaymentIntentId?: string | null;
+  stripeChargeId?: string | null;
+  livemode?: boolean | null;
+  failureMessage?: string | null;
+  succeededAt?: string | null;
+  lastEventAt?: string | null;
+  receiptEmailSentAt?: string | null;
+  grossMinor?: number | null;
+  feeMinor?: number | null;
+  netMinor?: number | null;
+  settlementCurrency?: string | null;
+  /**
+   * Stripe's exchange rate from the charge currency to the settlement currency.
+   */
+  fxRate?: number | null;
+  balanceTransactionId?: string | null;
+  availableOn?: string | null;
+  refundedMinor?: number | null;
+  disputeId?: string | null;
+  disputeStatus?: string | null;
+  disputeReason?: string | null;
+  disputeEvidenceDueBy?: string | null;
+  /**
+   * Finance only. Enter an amount in major units (e.g. 25.00) and save. The refund is sent to Stripe and recorded under Refunds.
+   */
+  refundRequest?: {
+    amount?: number | null;
+    reason?: ('requested_by_customer' | 'duplicate' | 'fraudulent') | null;
+    confirm?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refunds".
+ */
+export interface Refund {
+  id: number;
+  payment: number | Payment;
+  amountMinor: number;
+  currency: string;
+  status?: string | null;
+  reason?: string | null;
+  stripeRefundId?: string | null;
+  requestedBy?: (number | null) | User;
+  notifiedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-events".
+ */
+export interface PaymentEvent {
+  id: number;
+  stripeEventId: string;
+  type: string;
+  payment?: (number | null) | Payment;
+  livemode?: boolean | null;
+  verified?: boolean | null;
+  outcome?: string | null;
+  objectId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
  */
@@ -336,6 +440,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'contact-messages';
         value: number | ContactMessage;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: number | Payment;
+      } | null)
+    | ({
+        relationTo: 'refunds';
+        value: number | Refund;
+      } | null)
+    | ({
+        relationTo: 'payment-events';
+        value: number | PaymentEvent;
       } | null)
     | ({
         relationTo: 'users';
@@ -475,6 +591,83 @@ export interface ContactMessagesSelect<T extends boolean = true> {
   ipHash?: T;
   status?: T;
   internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  receiptRef?: T;
+  accessToken?: T;
+  idempotencyKey?: T;
+  ipHash?: T;
+  status?: T;
+  amountMinor?: T;
+  currency?: T;
+  frequency?: T;
+  donorEmail?: T;
+  donorName?: T;
+  showName?: T;
+  memorialNote?: T;
+  stripePaymentIntentId?: T;
+  stripeChargeId?: T;
+  livemode?: T;
+  failureMessage?: T;
+  succeededAt?: T;
+  lastEventAt?: T;
+  receiptEmailSentAt?: T;
+  grossMinor?: T;
+  feeMinor?: T;
+  netMinor?: T;
+  settlementCurrency?: T;
+  fxRate?: T;
+  balanceTransactionId?: T;
+  availableOn?: T;
+  refundedMinor?: T;
+  disputeId?: T;
+  disputeStatus?: T;
+  disputeReason?: T;
+  disputeEvidenceDueBy?: T;
+  refundRequest?:
+    | T
+    | {
+        amount?: T;
+        reason?: T;
+        confirm?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "refunds_select".
+ */
+export interface RefundsSelect<T extends boolean = true> {
+  payment?: T;
+  amountMinor?: T;
+  currency?: T;
+  status?: T;
+  reason?: T;
+  stripeRefundId?: T;
+  requestedBy?: T;
+  notifiedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-events_select".
+ */
+export interface PaymentEventsSelect<T extends boolean = true> {
+  stripeEventId?: T;
+  type?: T;
+  payment?: T;
+  livemode?: T;
+  verified?: T;
+  outcome?: T;
+  objectId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -684,6 +877,14 @@ export interface SiteSetting {
    * Largest custom amount, in whole currency units.
    */
   customAmountMax: number;
+  legalRecipient?: string | null;
+  /**
+   * For example, whether this is a personal gift, a fund contribution, etc.
+   */
+  paymentClassification?: string | null;
+  purposeDisclosure?: string | null;
+  taxStatement?: string | null;
+  refundPolicy?: string | null;
   /**
    * Verified support inbox. Shown publicly. Leave empty until verified.
    */
@@ -783,6 +984,11 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   contactFormEnabled?: T;
   customAmountMin?: T;
   customAmountMax?: T;
+  legalRecipient?: T;
+  paymentClassification?: T;
+  purposeDisclosure?: T;
+  taxStatement?: T;
+  refundPolicy?: T;
   supportEmail?: T;
   notificationRecipients?:
     | T

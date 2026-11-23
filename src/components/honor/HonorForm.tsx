@@ -10,23 +10,30 @@ import { formatMoney, toMinor, type Currency } from "@/lib/money";
 import { CurrencyToggle } from "./CurrencyToggle";
 import { PresetAmounts } from "./PresetAmounts";
 
+export type AmountSelection = { currency: Currency; amount: number };
+
 /**
- * Honor page amount selection (PRD §8.2). M1 covers currency, preset and
- * custom amount, and the summary. Contributor details, review and the Stripe
- * checkout arrive in M4. While payments are disabled, the continue action is
- * unavailable and the visitor sees why.
+ * Step 1 of the Honor checkout: currency, preset or custom amount, and the
+ * summary (PRD §8.2). While payments are disabled, the continue action is
+ * unavailable and the visitor sees why. The server re-validates every value.
  */
 export function HonorForm({
   currencies,
   paymentsEnabled,
   limits = CUSTOM_AMOUNT_LIMITS,
+  onContinue,
+  initial,
 }: {
   currencies: readonly Currency[];
   paymentsEnabled: boolean;
   limits?: AmountLimits;
+  onContinue?: (selection: AmountSelection) => void;
+  /** Restores the choice when the visitor comes back from a later step. */
+  initial?: AmountSelection | null;
 }) {
   const searchParams = useSearchParams();
-  const prefill = parseHonorPrefill(searchParams, currencies, limits);
+  const fromUrl = parseHonorPrefill(searchParams, currencies, limits);
+  const prefill = initial ?? fromUrl;
 
   const [currency, setCurrency] = useState<Currency>(prefill.currency);
   const [preset, setPreset] = useState<number | null>(
@@ -45,7 +52,14 @@ export function HonorForm({
   const symbol = currency === "USD" ? "$" : "£";
 
   return (
-    <form className="space-y-8" onSubmit={(e) => e.preventDefault()} noValidate>
+    <form
+      className="space-y-8"
+      noValidate
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (paymentsEnabled && amount !== null) onContinue?.({ currency, amount });
+      }}
+    >
       <div>
         <CurrencyToggle
           value={currency}

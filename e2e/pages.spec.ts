@@ -87,10 +87,17 @@ test.describe("Honor page", () => {
     await expect(page.getByRole("radio", { name: "$50", exact: true })).toBeChecked();
   });
 
-  test("keeps payment unavailable while payments are disabled", async ({ page }) => {
+  test("shows either the not-open notice or the secure checkout, never both", async ({ page }) => {
     await page.goto("/honor");
-    await expect(page.getByText("Contributions are not open yet")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Continue to Secure Payment" })).toBeDisabled();
+    const notOpen = page.getByText("Contributions are not open yet");
+    const progress = page.getByRole("list", { name: "Checkout progress" });
+    await expect(notOpen.or(progress)).toBeVisible();
+    if (await notOpen.isVisible()) {
+      await expect(page.getByRole("button", { name: "Continue to Secure Payment" })).toBeDisabled();
+      await expect(progress).toHaveCount(0);
+    } else {
+      await expect(page.getByRole("button", { name: "Continue to Secure Payment" })).toBeEnabled();
+    }
   });
 });
 

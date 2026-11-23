@@ -6,7 +6,7 @@ Product requirements: `Comfort_Kwaw_Memorial_Fund_PRD_v1.docx`. Build plan and m
 ## Stack
 
 Next.js 16 (App Router, Cache Components) · React 19 · TypeScript · Tailwind CSS 4 · Payload CMS 3 + PostgreSQL · payload-totp (admin MFA) · Vitest · Playwright + axe.
-Planned: Stripe (M4).
+Stripe (Payment Element + signed webhooks).
 
 ## Getting started
 
@@ -39,6 +39,22 @@ Each form opens with its switch in **Site settings** (memory submissions, photo 
 - **Photos:** files are decoded, resized and re-encoded to JPEG on the server, which strips all metadata (including GPS location). Files that aren't real images are rejected. Photos are private until approved.
 - **Anti-abuse:** a hidden honeypot field, a signed timer that rejects instant submissions, a limit of 5 per hour per visitor (IP addresses are stored only as salted hashes), and Cloudflare Turnstile when its keys are set.
 - **Email:** visitors get a confirmation if they gave an address. Staff in _Site settings → notification recipients_ (and the support email) get a link to the review queue, never the visitor's details. Without `RESEND_API_KEY`, emails are written to the server log.
+
+## Payments (Stripe)
+
+The checkout runs **amount → your details → review and pay**, with Stripe's Payment Element on our own page.
+
+- **Server-side checks:** the server re-validates the currency, the amount (a preset, or a custom amount within Site-settings limits) and the launch flags. It then records the payment and creates the PaymentIntent with an idempotency key, so a double click or retry never creates a second charge.
+- **Webhook only:** a payment is marked paid only by a **signed webhook** (`/api/stripe/webhook`). Each event is stored once by its Stripe id, so redeliveries are ignored. Status only moves forward. The amount and currency must match the record.
+- **Ledger:** amounts are stored in cents/pence with their currency. Gross, fee, net, settlement currency and FX rate come from Stripe's balance transaction. USD and GBP are never summed.
+- **Visitor pages:** confirmation (`/honor/confirmation`) and receipt (`/honor/receipt`) need the receipt reference **and** a secret token. They show the PRD wording for successful, processing, failed, refunded and under-review payments.
+- **Refunds:** finance staff open a payment in the admin, enter an amount under _Issue a refund_ and tick the confirmation. Over-refunds are blocked, and Stripe's webhook records the final state.
+- **Gating:** payments can't be switched on until every disclosure in Site settings is filled (recipient, classification, purpose, tax statement, refund policy). Switching on needs two super admins. Live Stripe keys are refused unless `STRIPE_ALLOW_LIVE=true`.
+- **Not built:** monthly honoring (deferred until approved).
+
+**Stripe webhook endpoint:** `https://<site>/api/stripe/webhook`, subscribed to `payment_intent.succeeded`, `payment_intent.processing`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.succeeded`, `charge.updated`, `charge.refunded`, `refund.created`, `refund.updated`, `refund.failed`, `charge.dispute.created`, `charge.dispute.updated` and `charge.dispute.closed`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+
+**Testing locally:** run `SEED_OPEN_PAYMENTS=1 npm run seed` to open payments with clearly labelled _TEST_ placeholder disclosures (never in production). `e2e/payments.spec.ts` runs real Stripe test payments and delivers Stripe's actual events, signed, to the webhook. It's skipped when Stripe test keys aren't set.
 
 ### Schema changes
 
