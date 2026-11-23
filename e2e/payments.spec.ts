@@ -23,7 +23,10 @@ test.skip(Boolean(STRIPE_SECRET_KEY?.startsWith("sk_live")), "never run against 
 test.describe.configure({ mode: "serial", timeout: 120_000 });
 test.beforeEach(({ isMobile }) => test.skip(isMobile, "desktop only"));
 
-const stripe = new Stripe(STRIPE_SECRET_KEY ?? "", { httpClient: Stripe.createFetchHttpClient() });
+// Placeholder only lets the file load when the suite is skipped (e.g. CI without Stripe keys).
+const stripe = new Stripe(STRIPE_SECRET_KEY || "sk_test_not_configured", {
+  httpClient: Stripe.createFetchHttpClient(),
+});
 let db: pg.Client;
 const startedAt = Math.floor(Date.now() / 1000) - 5;
 
