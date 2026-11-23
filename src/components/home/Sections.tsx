@@ -163,6 +163,16 @@ export function MemoriesSection({ c, memories }: { c: HomeCopy["memories"]; memo
 export function MemoryCard({ memory }: { memory: PublicMemory }) {
   return (
     <figure className="h-full rounded-2xl bg-white p-6 shadow-sm ring-1 ring-ink/5">
+      {memory.photo && (
+        <Image
+          src={memory.photo.src}
+          alt={memory.photo.alt}
+          width={memory.photo.width}
+          height={memory.photo.height}
+          sizes="(min-width: 1024px) 24rem, 90vw"
+          className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
+        />
+      )}
       <span aria-hidden="true" className="font-display text-4xl leading-none text-gold">
         “
       </span>

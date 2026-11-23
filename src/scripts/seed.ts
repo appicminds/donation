@@ -41,4 +41,14 @@ if (existing.totalDocs > 0) {
   payload.logger.info(`Seed: added ${filename} to the media library.`);
 }
 
+// Test environments only: open the visitor forms so end-to-end tests can use them.
+if (process.env.SEED_OPEN_FORMS === "1") {
+  await payload.updateGlobal({
+    slug: "site-settings",
+    overrideAccess: true,
+    data: { memorySubmissionsEnabled: true, photoSubmissionsEnabled: true, contactFormEnabled: true },
+  });
+  payload.logger.info("Seed: visitor forms opened (SEED_OPEN_FORMS=1).");
+}
+
 process.exit(0);

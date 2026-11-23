@@ -150,6 +150,7 @@ export interface Memory {
   publicConsent?: boolean | null;
   showName?: boolean | null;
   status: 'pending' | 'approved' | 'rejected' | 'hidden' | 'removed';
+  ipHash?: string | null;
   moderationReason?: string | null;
   reviewedBy?: (number | null) | User;
   reviewedAt?: string | null;
@@ -171,6 +172,12 @@ export interface Media {
    */
   caption?: string | null;
   rightsConfirmed?: boolean | null;
+  origin?: ('family' | 'visitor') | null;
+  visitorName?: string | null;
+  visitorEmail?: string | null;
+  visitorConsent?: boolean | null;
+  rightsAttested?: boolean | null;
+  ipHash?: string | null;
   approvalStatus: 'pending' | 'approved' | 'rejected' | 'removed';
   /**
    * Show on the public gallery once approved.
@@ -255,6 +262,7 @@ export interface ContactMessage {
   email: string;
   topic: 'memorial' | 'payment' | 'general';
   message: string;
+  ipHash?: string | null;
   status?: ('new' | 'in_progress' | 'resolved') | null;
   internalNotes?: string | null;
   updatedAt: string;
@@ -393,6 +401,7 @@ export interface MemoriesSelect<T extends boolean = true> {
   publicConsent?: T;
   showName?: T;
   status?: T;
+  ipHash?: T;
   moderationReason?: T;
   reviewedBy?: T;
   reviewedAt?: T;
@@ -407,6 +416,12 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   rightsConfirmed?: T;
+  origin?: T;
+  visitorName?: T;
+  visitorEmail?: T;
+  visitorConsent?: T;
+  rightsAttested?: T;
+  ipHash?: T;
   approvalStatus?: T;
   showInGallery?: T;
   sortOrder?: T;
@@ -457,6 +472,7 @@ export interface ContactMessagesSelect<T extends boolean = true> {
   email?: T;
   topic?: T;
   message?: T;
+  ipHash?: T;
   status?: T;
   internalNotes?: T;
   updatedAt?: T;

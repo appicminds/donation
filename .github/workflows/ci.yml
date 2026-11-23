@@ -45,6 +45,8 @@ jobs:
           PAYLOAD_SECRET: ""
       - run: npm run migrate
       - run: npm run seed
+        env:
+          SEED_OPEN_FORMS: "1"
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

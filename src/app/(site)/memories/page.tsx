@@ -3,6 +3,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { PageHero } from "@/components/ui/PageHero";
 import { memoriesPage } from "@/content/copy";
+import { MemoryForm } from "@/components/forms/Forms";
 import { MemoryCard } from "@/components/home/Sections";
 import { getApprovedMemories, getHomeCopy, getSiteSettings } from "@/lib/cms";
 
@@ -39,11 +40,20 @@ export default async function MemoriesPage() {
           <h2 id="share-title" className="text-4xl text-ink">
             Share Your Memory
           </h2>
-          <p className="mt-3 text-ink/80">{memoriesPage.moderation}</p>
-          {settings.flags.memorySubmissionsEnabled ? null : <Notice className="mt-6">{memoriesPage.notYetOpen}</Notice>}
-          <ButtonLink href="/legacy" variant="outline-dark" arrow className="mt-8">
-            Read Her Story
-          </ButtonLink>
+          <p className="mt-3 text-ink/80">{memoriesPage.intro}</p>
+          {settings.flags.memorySubmissionsEnabled ? (
+            <div className="mt-8">
+              <MemoryForm photosEnabled={settings.flags.photoSubmissionsEnabled} />
+            </div>
+          ) : (
+            <>
+              <p className="mt-3 text-ink/80">{memoriesPage.moderation}</p>
+              <Notice className="mt-6">{memoriesPage.notYetOpen}</Notice>
+              <ButtonLink href="/legacy" variant="outline-dark" arrow className="mt-8">
+                Read Her Story
+              </ButtonLink>
+            </>
+          )}
         </section>
       </div>
     </>

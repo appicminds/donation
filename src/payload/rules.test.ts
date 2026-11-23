@@ -30,6 +30,13 @@ describe("media approval", () => {
     expect(checkMediaApproval({ approvalStatus: "approved", rightsConfirmed: true, alt: "Comfort" })).toBeNull();
     expect(checkMediaApproval({ approvalStatus: "pending" })).toBeNull();
   });
+
+  it("requires a visitor's own consent for visitor photos", () => {
+    const ok = { approvalStatus: "approved", rightsConfirmed: true, alt: "A garden" };
+    expect(checkMediaApproval({ ...ok, origin: "visitor", visitorConsent: false })).toMatch(/visitor did not give/);
+    expect(checkMediaApproval({ ...ok, origin: "visitor", visitorConsent: true })).toBeNull();
+    expect(checkMediaApproval({ ...ok, origin: "family" })).toBeNull();
+  });
 });
 
 describe("publishing", () => {

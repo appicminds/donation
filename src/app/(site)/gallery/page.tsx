@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PhotoForm } from "@/components/forms/Forms";
 import { GalleryGrid } from "@/components/gallery/GalleryGrid";
 import { Notice } from "@/components/ui/Notice";
 import { PageHero } from "@/components/ui/PageHero";
@@ -24,12 +25,18 @@ export default async function GalleryPage() {
           <GalleryGrid photos={galleryPhotos} />
         )}
         <div className="mx-auto mt-16 max-w-2xl">
-          <h2 className="text-3xl text-ink">Share a Photograph</h2>
+          <h2 id="share-photo-title" className="text-3xl text-ink">
+            Share a Photograph
+          </h2>
           <p className="mt-3 text-ink/80">
             Photographs are reviewed by the family before they appear. Please share only photographs you have permission
             to post.
           </p>
-          {!settings.flags.photoSubmissionsEnabled && (
+          {settings.flags.photoSubmissionsEnabled ? (
+            <div className="mt-8">
+              <PhotoForm />
+            </div>
+          ) : (
             <Notice className="mt-6">Photo sharing will open soon. Thank you for your patience.</Notice>
           )}
         </div>

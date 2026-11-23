@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { resendAdapter } from "@payloadcms/email-resend";
 import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import { buildConfig } from "payload";
 import { payloadTotp } from "payload-totp";
@@ -34,6 +35,14 @@ export default buildConfig({
     push: false,
     prodMigrations: migrations,
   }),
+  // Transactional email via Resend when configured; otherwise Payload logs emails to the console.
+  email: process.env.RESEND_API_KEY
+    ? resendAdapter({
+        apiKey: process.env.RESEND_API_KEY,
+        defaultFromAddress: process.env.EMAIL_FROM_ADDRESS ?? "",
+        defaultFromName: "Comfort Kwaw Memorial Fund",
+      })
+    : undefined,
   sharp,
   upload: { limits: { fileSize: 10 * 1024 * 1024 } },
   graphQL: { disable: true },

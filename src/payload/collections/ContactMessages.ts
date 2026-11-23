@@ -33,6 +33,13 @@ export const ContactMessages: CollectionConfig = {
     },
     { name: "message", type: "textarea", required: true, maxLength: 5000, access: { update: () => false } },
     {
+      name: "ipHash",
+      type: "text",
+      index: true,
+      access: { read: () => false, update: () => false },
+      admin: { hidden: true },
+    },
+    {
       name: "status",
       type: "select",
       defaultValue: "new",

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // The public site and the Payload admin have separate root layouts.
     globalNotFound: true,
+    // Visitor photos: 4 MB file limit plus multipart overhead. Vercel caps bodies at ~4.5 MB.
+    serverActions: { bodySizeLimit: "4.4mb" },
   },
   turbopack: {
     rules: {

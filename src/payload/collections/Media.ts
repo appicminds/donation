@@ -66,6 +66,50 @@ export const Media: CollectionConfig = {
       defaultValue: false,
     },
     {
+      name: "origin",
+      type: "select",
+      defaultValue: "family",
+      options: [
+        { label: "Family / staff upload", value: "family" },
+        { label: "Shared by a visitor", value: "visitor" },
+      ],
+      access: { create: () => false, update: () => false },
+      admin: { position: "sidebar", readOnly: true },
+    },
+    {
+      type: "collapsible",
+      label: "Visitor submission",
+      admin: { condition: (data) => data?.origin === "visitor" },
+      fields: [
+        { name: "visitorName", type: "text", access: { create: () => false, update: () => false } },
+        {
+          name: "visitorEmail",
+          type: "email",
+          label: "Visitor email (never shown publicly)",
+          access: { create: () => false, update: () => false },
+        },
+        {
+          name: "visitorConsent",
+          type: "checkbox",
+          label: "Visitor gave permission for public display after review",
+          access: { create: () => false, update: () => false },
+        },
+        {
+          name: "rightsAttested",
+          type: "checkbox",
+          label: "Visitor confirmed they have permission to share this photograph",
+          access: { create: () => false, update: () => false },
+        },
+      ],
+    },
+    {
+      name: "ipHash",
+      type: "text",
+      index: true,
+      access: { read: () => false, update: () => false },
+      admin: { hidden: true },
+    },
+    {
       name: "approvalStatus",
       type: "select",
       required: true,

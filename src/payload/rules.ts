@@ -17,13 +17,21 @@ export function checkMemoryApproval(next: { status?: string; publicConsent?: boo
   return null;
 }
 
-/** PRD §20.6: media goes public only with confirmed rights and alt text. */
+/**
+ * PRD §20.6, §11.1: media goes public only with confirmed rights and alt text.
+ * A visitor's photo also needs the visitor's own public-display consent.
+ */
 export function checkMediaApproval(next: {
   approvalStatus?: string;
   rightsConfirmed?: boolean | null;
   alt?: string | null;
+  origin?: string | null;
+  visitorConsent?: boolean | null;
 }): string | null {
   if (next.approvalStatus !== "approved") return null;
+  if (next.origin === "visitor" && !next.visitorConsent) {
+    return "This photograph cannot be approved: the visitor did not give permission for public display.";
+  }
   if (!next.rightsConfirmed) return "Confirm usage rights before approving this image.";
   if (!next.alt?.trim()) return "Add alt text before approving this image.";
   return null;

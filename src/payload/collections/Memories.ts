@@ -62,6 +62,13 @@ export const Memories: CollectionConfig = {
       ],
       admin: { position: "sidebar" },
     },
+    {
+      name: "ipHash",
+      type: "text",
+      index: true,
+      access: { read: () => false, update: () => false },
+      admin: { hidden: true },
+    },
     { name: "moderationReason", type: "textarea", label: "Reason (optional)", admin: { position: "sidebar" } },
     { name: "reviewedBy", type: "relationship", relationTo: "users", admin: { position: "sidebar", readOnly: true } },
     { name: "reviewedAt", type: "date", admin: { position: "sidebar", readOnly: true } },

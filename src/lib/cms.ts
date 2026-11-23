@@ -6,6 +6,7 @@ import { galleryPhotos as galleryFallback, type GalleryPhoto } from "@/content/g
 import { site } from "@/content/site";
 import { CUSTOM_AMOUNT_LIMITS } from "@/lib/honor";
 import type { Currency } from "@/lib/money";
+import type { Media } from "@/payload-types";
 
 /**
  * Public-site reads from the CMS. Each read is cached and tagged `cms`, and
@@ -15,9 +16,9 @@ import type { Currency } from "@/lib/money";
  */
 
 const CMS_TAG = "cms";
-const hasDatabase = () => Boolean(process.env.DATABASE_URL && process.env.PAYLOAD_SECRET);
+export const hasDatabase = () => Boolean(process.env.DATABASE_URL && process.env.PAYLOAD_SECRET);
 
-async function payloadClient() {
+export async function payloadClient() {
   const [{ getPayload }, { default: config }] = await Promise.all([import("payload"), import("@payload-config")]);
   return getPayload({ config });
 }
@@ -114,7 +115,28 @@ export async function getLegacyCopy(): Promise<LegacyCopy> {
   });
 }
 
-export type PublicMemory = { id: string; message: string; name: string | null; relationship: string | null };
+export type PublicMemory = {
+  id: string;
+  message: string;
+  name: string | null;
+  relationship: string | null;
+  photo: { src: string; width: number; height: number; alt: string } | null;
+};
+
+/** A memory's photo is shown only if the photo itself passed review. */
+function publicPhoto(photo: unknown): PublicMemory["photo"] {
+  if (!photo || typeof photo !== "object") return null;
+  const p = photo as Media;
+  if (p.approvalStatus !== "approved" || !p.rightsConfirmed || !p.alt || !p.url || !p.width || !p.height) return null;
+  if (p.origin === "visitor" && !p.visitorConsent) return null;
+  const large = p.sizes?.large;
+  return {
+    src: large?.url || p.url,
+    width: large?.width || p.width,
+    height: large?.height || p.height,
+    alt: p.alt,
+  };
+}
 
 /** Approved messages with public-display consent only (PRD §7.6, §11.2). */
 export async function getApprovedMemories(limit = 24): Promise<PublicMemory[]> {
@@ -125,7 +147,7 @@ export async function getApprovedMemories(limit = 24): Promise<PublicMemory[]> {
     const { docs } = await payload.find({
       collection: "memories",
       overrideAccess: true,
-      depth: 0,
+      depth: 1,
       limit,
       sort: "-reviewedAt",
       where: { and: [{ status: { equals: "approved" } }, { publicConsent: { equals: true } }] },
@@ -135,6 +157,7 @@ export async function getApprovedMemories(limit = 24): Promise<PublicMemory[]> {
       message: m.message,
       name: m.showName ? m.name || null : null,
       relationship: m.showName ? m.relationship || null : null,
+      photo: publicPhoto(m.photo),
     }));
   });
 }

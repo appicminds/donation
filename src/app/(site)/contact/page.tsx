@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContactForm } from "@/components/forms/Forms";
 import { Notice } from "@/components/ui/Notice";
 import { PageHero } from "@/components/ui/PageHero";
 import { contactPage } from "@/content/copy";
@@ -15,7 +16,12 @@ export default async function ContactPage() {
         <p>{contactPage.intro}</p>
       </PageHero>
       <div className="mx-auto max-w-2xl px-4 py-14 sm:py-20">
-        {!settings.flags.contactFormEnabled && <Notice>{contactPage.notYetOpen}</Notice>}
+        <h2 id="contact-form-title" className="text-3xl text-ink">
+          Send a message
+        </h2>
+        <div className="mt-6">
+          {settings.flags.contactFormEnabled ? <ContactForm /> : <Notice>{contactPage.notYetOpen}</Notice>}
+        </div>
         {settings.supportEmail && (
           <p className="mt-6 text-ink/80">
             You can also email{" "}

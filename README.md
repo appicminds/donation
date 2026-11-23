@@ -31,6 +31,15 @@ Without `DATABASE_URL` and `PAYLOAD_SECRET`, the public site still runs on the s
 - **Launch flags** are in Site settings. Switching payments on needs two different super admins.
 - **Audit log:** an append-only record of logins and every change, visible to super admins.
 
+## Visitor forms (memories, photos, contact)
+
+Each form opens with its switch in **Site settings** (memory submissions, photo submissions, contact form).
+
+- **Moderation:** submissions are saved as Pending and never appear publicly until a moderator approves them. Approval also needs the visitor's public-display consent.
+- **Photos:** files are decoded, resized and re-encoded to JPEG on the server, which strips all metadata (including GPS location). Files that aren't real images are rejected. Photos are private until approved.
+- **Anti-abuse:** a hidden honeypot field, a signed timer that rejects instant submissions, a limit of 5 per hour per visitor (IP addresses are stored only as salted hashes), and Cloudflare Turnstile when its keys are set.
+- **Email:** visitors get a confirmation if they gave an address. Staff in _Site settings → notification recipients_ (and the support email) get a link to the review queue, never the visitor's details. Without `RESEND_API_KEY`, emails are written to the server log.
+
 ### Schema changes
 
 The database schema only changes through committed migrations:
