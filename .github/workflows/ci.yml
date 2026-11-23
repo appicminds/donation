@@ -26,6 +26,8 @@ jobs:
       # Throwaway values for CI only.
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/comfort_kwaw
       PAYLOAD_SECRET: ci-only-not-a-real-secret-0123456789abcdef
+      # Lets the e2e helper create the first staff account on the empty CI database.
+      BOOTSTRAP_ADMIN_EMAIL: e2e-finance@example.test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

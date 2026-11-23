@@ -25,6 +25,16 @@ export default buildConfig({
     user: Users.slug,
     meta: { titleSuffix: " · Comfort Kwaw Memorial Fund admin" },
     importMap: { baseDir: path.resolve(dirname) },
+    components: {
+      afterNavLinks: ["/payload/components/FinanceNavLink#FinanceNavLink"],
+      views: {
+        finance: {
+          Component: "/payload/views/FinanceDashboard#FinanceDashboard",
+          path: "/finance",
+          meta: { title: "Finance overview" },
+        },
+      },
+    },
   },
   collections: [Memories, Media, ContactMessages, Payments, Refunds, PaymentEvents, Users, AuditLogs],
   globals: [HomepageContent, LegacyContent, SiteSettings],

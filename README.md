@@ -56,6 +56,17 @@ The checkout runs **amount → your details → review and pay**, with Stripe's 
 
 **Testing locally:** run `SEED_OPEN_PAYMENTS=1 npm run seed` to open payments with clearly labelled _TEST_ placeholder disclosures (never in production). `e2e/payments.spec.ts` runs real Stripe test payments and delivers Stripe's actual events, signed, to the webhook. It's skipped when Stripe test keys aren't set.
 
+## Finance overview and exports
+
+Finance staff (two-step login required) see **Finance overview** in the admin sidebar (`/admin/finance`):
+
+- **Per currency:** gross, refunds and net of refunds for USD and GBP separately. The two are never added together.
+- **USD equivalent:** shown only when a reporting rate, its source and its date are set under _Site settings → Reporting exchange rate_. No payment is ever converted.
+- **Fees and net:** in the **settlement currency**, from Stripe balance transactions.
+- **Counts:** supporters (distinct emails), pending, failed and canceled payments, and payments still waiting for settlement figures.
+- **Date ranges:** a date filter, plus This month, Last 30 days, This year and All time.
+- **Exports:** **Excel** (Summary and Payments sheets) and **CSV** (`/api/payments/export`). They have separate USD and GBP columns, exact decimal amounts, settlement figures, Stripe references, and the range, author and FX basis. CSV cells are protected against formula injection. Every export is written to the audit log.
+
 ### Schema changes
 
 The database schema only changes through committed migrations:

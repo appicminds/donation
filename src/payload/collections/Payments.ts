@@ -2,6 +2,7 @@ import { APIError, type CollectionConfig, type FieldAccess } from "payload";
 import { auditCollectionChange } from "../audit";
 import { hasRole } from "../roles";
 import { PAYMENT_STATUSES } from "@/lib/payments/rules";
+import { financeExport } from "../endpoints/financeExport";
 
 /** Ledger fields are written by the checkout action and the signed webhook only. */
 const system: { create: FieldAccess; update: FieldAccess } = { create: () => false, update: () => false };
@@ -35,6 +36,7 @@ export const Payments: CollectionConfig = {
     update: ({ req }) => hasRole(req.user, "finance"),
     delete: () => false,
   },
+  endpoints: [financeExport],
   fields: [
     { name: "receiptRef", type: "text", required: true, unique: true, index: true, access: system },
     {

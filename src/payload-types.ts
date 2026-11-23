@@ -885,6 +885,12 @@ export interface SiteSetting {
   purposeDisclosure?: string | null;
   taxStatement?: string | null;
   refundPolicy?: string | null;
+  gbpToUsdRate?: number | null;
+  /**
+   * For example: ECB reference rate, or the bank's settlement rate.
+   */
+  fxRateSource?: string | null;
+  fxRateAsOf?: string | null;
   /**
    * Verified support inbox. Shown publicly. Leave empty until verified.
    */
@@ -989,6 +995,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   purposeDisclosure?: T;
   taxStatement?: T;
   refundPolicy?: T;
+  gbpToUsdRate?: T;
+  fxRateSource?: T;
+  fxRateAsOf?: T;
   supportEmail?: T;
   notificationRecipients?:
     | T

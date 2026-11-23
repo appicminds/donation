@@ -29,7 +29,8 @@ export const SiteSettings: GlobalConfig = {
   admin: { group: "Settings" },
   access: {
     read: ({ req }) => isStaff(req.user),
-    update: ({ req }) => hasRole(req.user, "legal_approver"),
+    // Field-level access narrows this further (flags: super admin; disclosures: legal; FX: finance).
+    update: ({ req }) => hasRole(req.user, "legal_approver", "finance"),
   },
   fields: [
     {
@@ -129,6 +130,38 @@ export const SiteSettings: GlobalConfig = {
           type: "textarea",
           label: "Refund policy summary",
           access: { update: ({ req }) => hasRole(req.user, "legal_approver") },
+        },
+      ],
+    },
+    {
+      type: "collapsible",
+      label: "Reporting exchange rate (finance)",
+      admin: {
+        description:
+          "Used only for the USD-equivalent total on the finance dashboard and in exports (PRD §13.1). Payments themselves are never converted.",
+      },
+      fields: [
+        {
+          name: "gbpToUsdRate",
+          type: "number",
+          label: "1 GBP = ? USD",
+          min: 0.0001,
+          admin: { step: 0.0001 },
+          access: { update: ({ req }) => hasRole(req.user, "finance") },
+        },
+        {
+          name: "fxRateSource",
+          type: "text",
+          label: "Rate source",
+          admin: { description: "For example: ECB reference rate, or the bank's settlement rate." },
+          access: { update: ({ req }) => hasRole(req.user, "finance") },
+        },
+        {
+          name: "fxRateAsOf",
+          type: "date",
+          label: "Rate date",
+          admin: { date: { pickerAppearance: "dayOnly" } },
+          access: { update: ({ req }) => hasRole(req.user, "finance") },
         },
       ],
     },
