@@ -49,6 +49,8 @@ export function privateBlobStorage({ token, collections }: { token?: string; col
 
   return cloudStoragePlugin({
     enabled: Boolean(token),
-    collections: Object.fromEntries(collections.map((slug) => [slug, { adapter }])),
+    // Same database schema with or without a token (the plugin adds `_objectKey`).
+    alwaysInsertFields: true,
+    collections: Object.fromEntries(collections.map((slug) => [slug, { adapter: token ? adapter : null }])),
   });
 }

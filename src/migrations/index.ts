@@ -4,6 +4,7 @@ import * as migration_20261123_091446_payments from './20261123_091446_payments'
 import * as migration_20261123_091637_payments_iphash from './20261123_091637_payments_iphash';
 import * as migration_20261123_112840_reporting_fx from './20261123_112840_reporting_fx';
 import * as migration_20261123_121653_donor_accounts from './20261123_121653_donor_accounts';
+import * as migration_20261123_181031_media_storage_fields from './20261123_181031_media_storage_fields';
 
 export const migrations = [
   {
@@ -34,6 +35,11 @@ export const migrations = [
   {
     up: migration_20261123_121653_donor_accounts.up,
     down: migration_20261123_121653_donor_accounts.down,
-    name: '20261123_121653_donor_accounts'
+    name: '20261123_121653_donor_accounts',
+  },
+  {
+    up: migration_20261123_181031_media_storage_fields.up,
+    down: migration_20261123_181031_media_storage_fields.down,
+    name: '20261123_181031_media_storage_fields'
   },
 ];

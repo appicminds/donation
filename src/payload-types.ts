@@ -197,6 +197,8 @@ export interface Media {
   sortOrder?: number | null;
   reviewedBy?: (number | null) | User;
   reviewedAt?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -563,6 +565,8 @@ export interface MediaSelect<T extends boolean = true> {
   sortOrder?: T;
   reviewedBy?: T;
   reviewedAt?: T;
+  prefix?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
