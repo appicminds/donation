@@ -871,7 +871,7 @@ export interface LegacyPage {
 export interface SiteSetting {
   id: number;
   /**
-   * Requires two super administrators: the first request is recorded, a second person confirms. Only switch on after legal, processor and production approvals (Gates B–D).
+   * With live Stripe keys this needs two super administrators: the first request is recorded, a second person confirms. With Stripe test keys one super administrator can switch it on. Only switch on for real after legal, processor and production approvals (Gates B–D).
    */
   paymentsEnabled?: boolean | null;
   /**
@@ -895,7 +895,7 @@ export interface SiteSetting {
    */
   memorySubmissionsEnabled?: boolean | null;
   /**
-   * Visitor photo uploads (pending review).
+   * Visitor photo uploads (pending review). Stays closed on the live site until photo storage (Vercel Blob) is connected.
    */
   photoSubmissionsEnabled?: boolean | null;
   /**

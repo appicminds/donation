@@ -2,7 +2,6 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { resendAdapter } from "@payloadcms/email-resend";
-import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import { buildConfig } from "payload";
 import { payloadTotp } from "payload-totp";
 import sharp from "sharp";
@@ -14,6 +13,7 @@ import { Media } from "./payload/collections/Media";
 import { Memories } from "./payload/collections/Memories";
 import { PaymentEvents, Payments, Refunds } from "./payload/collections/Payments";
 import { Users } from "./payload/collections/Users";
+import { privateBlobStorage } from "./payload/storage/privateBlob";
 import { HomepageContent, LegacyContent } from "./payload/globals/content";
 import { SiteSettings } from "./payload/globals/SiteSettings";
 
@@ -61,11 +61,8 @@ export default buildConfig({
   telemetry: false,
   typescript: { outputFile: path.resolve(dirname, "payload-types.ts") },
   plugins: [
-    vercelBlobStorage({
-      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      collections: { media: true },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    }),
+    // Private Vercel Blob store: files are served only through Payload's access-checked route.
+    privateBlobStorage({ token: process.env.BLOB_READ_WRITE_TOKEN, collections: ["media"] }),
     // Must stay last: it wraps every collection's access with TOTP verification (PRD §4.1 MFA).
     payloadTotp({ collection: "users", forceSetup: true, totp: { issuer: "Comfort Kwaw Memorial Fund" } }),
   ],

@@ -46,7 +46,7 @@ Based on PRD §17.1 and the approval gates in §19.1. ✅ done · ⏳ waiting on
 | Monitoring                                                                | ⏳     | Point an uptime monitor at `/api/health`; optional log drain or Sentry                                     |
 | Email: Resend with a verified sending domain (SPF, DKIM, DMARC)           | ⏳     | Needed for receipts, donor sign-in, confirmations                                                          |
 | Verified support email and notification recipients in Site settings       | ⏳     | Owner                                                                                                      |
-| Photo storage (Vercel Blob) if uploads are wanted                         | ⏳     | Owner decided to skip for now                                                                              |
+| Photo storage (Vercel Blob)                                               | ✅     | Private store connected; photos under review are never publicly reachable                                  |
 | Custom domain and SSL                                                     | ⏳     | Owner; then update `NEXT_PUBLIC_SERVER_URL` and the Stripe webhook URL                                     |
 | Rotate the Neon password (it was shared in chat)                          | ⏳     | Owner (runbook → Rotate secrets)                                                                           |
 | Cloudflare Turnstile keys (recommended before opening forms)              | ⏳     | Owner                                                                                                      |

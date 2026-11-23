@@ -4,14 +4,14 @@ How to run, monitor, back up and recover the Comfort Kwaw Memorial Fund site.
 
 ## Where things live
 
-| Piece    | Where                                                                                     |
-| -------- | ----------------------------------------------------------------------------------------- |
-| App      | Vercel project `donation`. Production deploys from the configured production branch.      |
-| Database | Neon Postgres (Vercel Storage integration), `DATABASE_URL` / `DATABASE_URL_UNPOOLED`      |
-| Payments | Stripe: test mode until Gate D. Webhook endpoint `/api/stripe/webhook`                    |
-| Email    | Resend (`RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`), not yet connected                        |
-| Photos   | Vercel Blob (`BLOB_READ_WRITE_TOKEN`), not yet connected; uploads are refused until it is |
-| Admin    | `/admin`. Every account needs an authenticator app (TOTP)                                 |
+| Piece    | Where                                                                                                                                                                                        |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App      | Vercel project `donation`. Production deploys from the configured production branch.                                                                                                         |
+| Database | Neon Postgres (Vercel Storage integration), `DATABASE_URL` / `DATABASE_URL_UNPOOLED`                                                                                                         |
+| Payments | Stripe: test mode until Gate D. Webhook endpoint `/api/stripe/webhook`                                                                                                                       |
+| Email    | Resend (`RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`), not yet connected                                                                                                                           |
+| Photos   | Private Vercel Blob store `donation-blob` (`BLOB_READ_WRITE_TOKEN`). Files are served only via `/api/media/file/…`, which applies the Media access rules (visitors see approved images only) |
+| Admin    | `/admin`. Every account needs an authenticator app (TOTP)                                                                                                                                    |
 
 ## Health and monitoring
 
