@@ -35,22 +35,28 @@ Based on PRD §17.1 and the approval gates in §19.1. ✅ done · ⏳ waiting on
 
 ## Gate D: Production
 
-| Item                                                                      | Status | Notes                                                                                                      |
-| ------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
-| USD and GBP test-mode suite passing                                       | ✅     | Automated: success, settlement and FX, duplicate/out-of-order events, forged signatures, refunds, declines |
-| One manual card payment in the browser on the live test site (card 4242…) | ⏳     | Not possible inside the build sandbox; please do this once                                                 |
-| Small live transactions made and reconciled with the finance export       | ⬜     | After Gate C                                                                                               |
-| Two super admins exist (needed to switch payments on with live keys)      | ⏳     | Owner                                                                                                      |
-| MFA enforced, least-privilege roles, audit log                            | ✅     |                                                                                                            |
-| Backups and restore drill                                                 | ✅     | Drill on 23 Nov 2026; see the runbook. Repeat once on Neon.                                                |
-| Monitoring                                                                | ⏳     | Point an uptime monitor at `/api/health`; optional log drain or Sentry                                     |
-| Email: Resend with a verified sending domain (SPF, DKIM, DMARC)           | ⏳     | Needed for receipts, donor sign-in, confirmations                                                          |
-| Verified support email and notification recipients in Site settings       | ⏳     | Owner                                                                                                      |
-| Photo storage (Vercel Blob)                                               | ✅     | Private store connected; photos under review are never publicly reachable                                  |
-| Custom domain and SSL                                                     | ⏳     | Owner; then update `NEXT_PUBLIC_SERVER_URL` and the Stripe webhook URL                                     |
-| Rotate the Neon password (it was shared in chat)                          | ⏳     | Owner (runbook → Rotate secrets)                                                                           |
-| Cloudflare Turnstile keys (recommended before opening forms)              | ⏳     | Owner                                                                                                      |
-| Moderators named and a review time agreed before opening submissions      | ⏳     | Owner                                                                                                      |
+| Item                                                                          | Status | Notes                                                                                                      |
+| ----------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
+| USD and GBP test-mode suite passing                                           | ✅     | Automated: success, settlement and FX, duplicate/out-of-order events, forged signatures, refunds, declines |
+| One manual card payment in the browser on the live test site (card 4242…)     | ⏳     | Not possible inside the build sandbox; please do this once                                                 |
+| Small live transactions made and reconciled with the finance export           | ⬜     | After Gate C                                                                                               |
+| Two super admins exist (needed to switch payments on with live keys)          | ⏳     | Owner. With test keys one super admin can switch payments on                                               |
+| MFA enforced, least-privilege roles, audit log                                | ✅     |                                                                                                            |
+| Backups and restore drill                                                     | ✅     | Drill on 23 Nov 2026; see the runbook. Repeat once on Neon.                                                |
+| Monitoring                                                                    | ⏳     | Point an uptime monitor at `/api/health`; optional log drain or Sentry                                     |
+| Email service connected (Resend keys in Vercel, Production)                   | ✅     | 24 Nov 2026. Donor sign-in form is live; receipts and confirmations are sent                               |
+| Verified sending domain in Resend (SPF, DKIM, DMARC)                          | ⏳     | Owner. `onboarding@resend.dev` only delivers to the Resend account's own address                           |
+| Donor sign-in tested end to end on the live site                              | ⏳     | Owner: request a link at `/account` with the test-payment email                                            |
+| Verified support email and notification recipients in Site settings           | ⏳     | Owner                                                                                                      |
+| Photo storage (Vercel Blob)                                                   | ✅     | Private store connected 23 Nov 2026; upload tested live; photos under review are never publicly reachable  |
+| Remove the "Claude upload test" photo from Admin → Images                     | ⏳     | Owner                                                                                                      |
+| Payments open on the test site (Stripe test mode, placeholder disclosures)    | ✅     | 23 Nov 2026. Replace the "TEST ONLY" disclosures with counsel's text before live (Gate B)                  |
+| CI green on GitHub (lint, types, unit, build, e2e)                            | ✅     | PR appicminds/donation#1                                                                                   |
+| Merge PR #1; set GitHub default branch and Vercel production branch to `main` | ⏳     | Owner                                                                                                      |
+| Custom domain and SSL                                                         | ⏳     | Owner; then update `NEXT_PUBLIC_SERVER_URL` and the Stripe webhook URL                                     |
+| Rotate the Neon password (it was shared in chat)                              | ⏳     | Owner (runbook → Rotate secrets)                                                                           |
+| Cloudflare Turnstile keys (recommended before opening forms)                  | ⏳     | Owner                                                                                                      |
+| Moderators named and a review time agreed before opening submissions          | ⏳     | Owner                                                                                                      |
 
 ## Quality (M6)
 
