@@ -3,5 +3,9 @@ export function paymentLinks(p: { receiptRef: string; accessToken?: string | nul
   const base = process.env.NEXT_PUBLIC_SERVER_URL?.replace(/\/$/, "");
   if (!base || !p.accessToken) return null;
   const q = `ref=${encodeURIComponent(p.receiptRef)}&t=${encodeURIComponent(p.accessToken)}`;
-  return { confirmation: `${base}/honor/confirmation?${q}`, receipt: `${base}/honor/receipt?${q}` };
+  return {
+    confirmation: `${base}/honor/confirmation?${q}`,
+    receipt: `${base}/honor/receipt?${q}`,
+    account: `${base}/account?${q}`,
+  };
 }

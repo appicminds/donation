@@ -1,6 +1,15 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { cookieName, createSession, readSession, SESSION_TTL_MS } from "./session";
+import {
+  cookieName,
+  createPending,
+  createSession,
+  LINK_TTL_MS,
+  pendingCookieName,
+  readPending,
+  readSession,
+  SESSION_TTL_MS,
+} from "./session";
 
 // Deliberately NOT a "use server" module: these must never be callable from the browser.
 
@@ -25,4 +34,17 @@ export async function startDonorSession(email: string): Promise<void> {
  */
 export async function endDonorSession(): Promise<void> {
   (await cookies()).set(cookieName(), "", { ...cookieOptions(), maxAge: 0 });
+}
+
+/** The email a sign-in code was just sent to (or requested for), if any. */
+export async function pendingEmail(): Promise<string | null> {
+  return readPending((await cookies()).get(pendingCookieName())?.value)?.email ?? null;
+}
+
+export async function setPendingEmail(email: string): Promise<void> {
+  (await cookies()).set(pendingCookieName(), createPending(email), { ...cookieOptions(), maxAge: LINK_TTL_MS / 1000 });
+}
+
+export async function clearPendingEmail(): Promise<void> {
+  (await cookies()).set(pendingCookieName(), "", { ...cookieOptions(), maxAge: 0 });
 }

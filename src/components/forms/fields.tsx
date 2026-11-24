@@ -55,7 +55,14 @@ export function TextField({
   defaultValue,
   autoComplete,
   maxLength,
-}: Common & { type?: "text" | "email"; defaultValue?: string; autoComplete?: string; maxLength?: number }) {
+  inputMode,
+}: Common & {
+  type?: "text" | "email" | "password";
+  defaultValue?: string;
+  autoComplete?: string;
+  maxLength?: number;
+  inputMode?: "numeric" | "text" | "email";
+}) {
   const id = useId();
   return (
     <div className={className}>
@@ -68,6 +75,7 @@ export function TextField({
         defaultValue={defaultValue}
         autoComplete={autoComplete}
         maxLength={maxLength}
+        inputMode={inputMode}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(id, hint, error)}
         className={cn(inputBase, "min-h-12")}

@@ -36,10 +36,11 @@ test.beforeAll(async ({}, info) => {
   db = new pg.Client({ connectionString: DATABASE_URL });
   await db.connect();
   // Earlier runs' test payments would count towards the per-visitor checkout limit.
-  const testPayments = `select id from payments where donor_email like 'e2e-%'`;
+  const testPayments = `select id from payments where donor_email in ('e2e-donor@example.test', 'e2e-double@example.test')`;
   await db.query(`delete from refunds where payment_id in (${testPayments})`);
   await db.query(`delete from payment_events where payment_id in (${testPayments})`);
-  await db.query(`delete from payments where donor_email like 'e2e-%'`);
+  await db.query(`delete from payments where donor_email in ('e2e-donor@example.test', 'e2e-double@example.test')`);
+  await db.query(`delete from donors where email in ('e2e-donor@example.test', 'e2e-double@example.test')`);
 });
 test.afterAll(async ({}, info) => {
   if (info.project.name !== "desktop") return;
@@ -132,6 +133,9 @@ test("successful payment: webhook records it once, with settlement figures", asy
   expect(p.settlement_currency).toMatch(/^[A-Z]{3}$/);
   if (p.settlement_currency !== "GBP") expect(Number(p.fx_rate)).toBeGreaterThan(0);
   expect(p.receipt_email_sent_at).not.toBeNull();
+  // PRD addendum A1-12: the donor account exists once the payment succeeds.
+  const donor = await db.query(`select count(*)::int as n from donors where email = 'e2e-donor@example.test'`);
+  expect(donor.rows[0].n).toBe(1);
 
   // Stripe redelivers the same event: acknowledged, nothing posted twice.
   const again = await deliver(page, succeeded);

@@ -15,6 +15,10 @@ const receiptButton = (p: Payment) => {
   const links = paymentLinks(p);
   return links ? [{ label: "View or download your receipt", href: links.receipt }] : [];
 };
+const accountButton = (p: Payment) => {
+  const links = paymentLinks(p);
+  return links ? [{ label: "Sign in to your donor account", href: links.account }] : [];
+};
 const statusButton = (p: Payment) => {
   const links = paymentLinks(p);
   return links ? [{ label: "View your payment status", href: links.confirmation }] : [];
@@ -34,7 +38,8 @@ export async function sendReceiptEmail(payload: Payload, p: Payment) {
       `Date: ${when(p.succeededAt)}`,
       `Receipt number: ${p.receiptRef}`,
       ...receiptButton(p),
-      "You can see all your payments and receipts at any time in your donor account: sign in on our website with this email address (Donor account, in the footer).",
+      "Your donor account is ready. Sign in with this email address to see all your payments and receipts. We will email you a code to confirm it's you, and you can add a password if you like.",
+      ...accountButton(p),
       TAX_FOOTER,
     ]),
   );

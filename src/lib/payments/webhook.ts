@@ -1,6 +1,7 @@
 import type { Payload } from "payload";
 import type Stripe from "stripe";
 import type { Payment } from "@/payload-types";
+import { ensureDonor } from "@/lib/donors/data";
 import { sendReceiptEmail, sendRefundEmail } from "./emails";
 import { nextStatus, refundStatus, type PaymentStatus } from "./rules";
 import { acceptsLivemode, stripe } from "./stripe";
@@ -190,6 +191,8 @@ async function applyPaymentIntent(
   const updated = await payload.update({ collection: "payments", id: payment.id, overrideAccess: true, data });
 
   if (status === "succeeded" && !payment.receiptEmailSentAt) {
+    // PRD addendum A1-12: the donor account exists from the first successful payment.
+    if (updated.donorEmail) await ensureDonor(payload, updated.donorEmail, updated.donorName);
     await sendReceiptEmail(payload, updated);
     await payload.update({
       collection: "payments",
