@@ -74,9 +74,18 @@ async function setPending(page: Page, email: string) {
   }, `${body}.${sig}`);
 }
 
+/**
+ * The anti-bot timer starts when the form's token arrives (its submit button
+ * becomes enabled), not on page load; waiting 3.2 s after that is safe on slow CI.
+ */
+async function formReady(page: Page, button: string | RegExp) {
+  await expect(page.getByRole("main").getByRole("button", { name: button }).first()).toBeEnabled({ timeout: 15_000 });
+  await page.waitForTimeout(3200);
+}
+
 async function enterCode(page: Page, code: string) {
   await page.goto("/account/code");
-  await page.waitForTimeout(3200); // the server refuses forms sent faster than a person could
+  await formReady(page, "Sign in");
   await page.getByLabel("6-digit code").fill(code);
   await page.getByRole("button", { name: "Sign in" }).click();
 }
@@ -107,7 +116,7 @@ test("requesting a code looks the same for known and unknown emails", async ({ b
   for (const email of ["e2e-nobody@example.test", DONOR]) {
     const page = await freshPage(browser);
     await page.goto("/account");
-    await page.waitForTimeout(3200);
+    await formReady(page, "Email me a sign-in code");
     await page.getByLabel("Email address used for your receipt").fill(email);
     await page.getByRole("button", { name: "Email me a sign-in code" }).click();
     await expect(page).toHaveURL(/\/account\/code$/, { timeout: 15_000 });
@@ -190,12 +199,11 @@ test("a donor can add a password and sign in with it", async ({ browser }) => {
   await signInWithCode(page);
   await expect(page.getByRole("heading", { name: "Add a password (optional)" })).toBeVisible();
   const setForm = page.getByRole("form", { name: "Add a password (optional)" });
-  await page.waitForTimeout(3200);
+  await formReady(page, "Save password");
   await setForm.getByLabel(/^Password/).fill(PASSWORD);
   await setForm.getByLabel(/^Type it again/).fill("something else entirely");
   await setForm.getByRole("button", { name: "Save password" }).click();
   await expect(page.getByText("The two passwords don't match.")).toBeVisible();
-  await page.waitForTimeout(3200);
   await setForm.getByLabel(/^Password/).fill(PASSWORD);
   await setForm.getByLabel(/^Type it again/).fill(PASSWORD);
   await setForm.getByRole("button", { name: "Save password" }).click();
@@ -206,7 +214,7 @@ test("a donor can add a password and sign in with it", async ({ browser }) => {
 
   const fresh = await freshPage(browser);
   await fresh.goto("/account");
-  await fresh.waitForTimeout(3200);
+  await formReady(fresh, "Sign in");
   const form = fresh.getByRole("form", { name: "Or sign in with your password" });
   await form.getByLabel(/^Email address/).fill(DONOR.toUpperCase());
   await form.getByLabel(/^Password/).fill(PASSWORD);
@@ -217,7 +225,7 @@ test("a donor can add a password and sign in with it", async ({ browser }) => {
 
 async function tryPassword(page: Page, email: string, password: string) {
   await page.goto("/account");
-  await page.waitForTimeout(3200);
+  await formReady(page, "Sign in");
   const form = page.getByRole("form", { name: "Or sign in with your password" });
   await form.getByLabel(/^Email address/).fill(email);
   await form.getByLabel(/^Password/).fill(password);
