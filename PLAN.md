@@ -1,27 +1,27 @@
 # Comfort Kwaw Memorial Fund — Implementation Plan
 
-Source: *Comfort_Kwaw_Memorial_Fund_PRD_v1.docx* (v1.0, 22 Nov 2026). The repository is empty, so this is a greenfield build.
+Source: _Comfort_Kwaw_Memorial_Fund_PRD_v1.docx_ (v1.0, 22 Nov 2026). The repository is empty, so this is a greenfield build.
 
 ## 1. What we're building (one paragraph)
 
 A memorial-first website for Comfort Kwaw with a deep-purple, cinematic look. It has a 9-section homepage, a biography page, a moderated memories and photo gallery, and a branded checkout for USD and GBP payments that the server validates and confirms through webhooks. Behind it sits an admin console with MFA and role-based access for content, moderation, finance and reporting. Legal, family and payment-processor approvals (Gates A–D) block any real payment or unapproved content from going live, so **feature flags and content approval status are first-class parts of the system**, not an afterthought.
 
-## 2. Proposed stack (PRD §14.3 leaves this open — needs sign-off)
+## 2. Stack (approved by the owner, 22 Nov 2026)
 
-| Concern | Choice | Why |
-|---|---|---|
-| Web app | **Next.js (App Router) + TypeScript** | SSR/ISR for fast public pages, server actions/route handlers for payments & forms, one codebase |
-| Styling | **Tailwind CSS** with PRD §6.3 tokens as CSS variables | Fast to match the concept; tokens stay editable |
-| CMS + admin | **Payload CMS 3** (runs inside the Next.js app) | Built-in drafts, version history, field-level access control, media, and an admin UI. That covers most of PRD §12 |
-| Admin MFA | TOTP 2FA (Payload plugin or custom auth strategy) | PRD §4.1: MFA is mandatory |
-| Database | **PostgreSQL** (Neon / Supabase / RDS) | Ledger integrity, transactions, unique constraints for idempotency |
-| Payments | **Stripe** (Payment Element on our own page, PaymentIntents) | Branded checkout, USD/GBP, 3DS/SCA, refunds and disputes through the API, signed webhooks. The PRD's reference links already assume Stripe |
-| Media | S3-compatible storage (S3 / R2): a **private** bucket for pending uploads and a public CDN path for approved files | PRD §11, §14.2 |
-| Email | Postmark or Resend (SPF/DKIM/DMARC) | Transactional receipts |
-| Anti-abuse | Cloudflare Turnstile + rate limiting (Upstash/Redis) | PRD §15.1 |
-| Monitoring | Sentry + uptime check; nightly DB backups with a restore drill | PRD §15.4, launch checklist |
-| Hosting | Vercel (app) + managed Postgres | Simple and supports preview deploys |
-| Tests | Vitest (unit), Playwright (e2e + axe accessibility), Stripe CLI for webhook tests | PRD §16 |
+| Concern     | Choice                                                                                                             | Why                                                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Web app     | **Next.js (App Router) + TypeScript**                                                                              | SSR/ISR for fast public pages, server actions/route handlers for payments & forms, one codebase                                            |
+| Styling     | **Tailwind CSS** with PRD §6.3 tokens as CSS variables                                                             | Fast to match the concept; tokens stay editable                                                                                            |
+| CMS + admin | **Payload CMS 3** (runs inside the Next.js app)                                                                    | Built-in drafts, version history, field-level access control, media, and an admin UI. That covers most of PRD §12                          |
+| Admin MFA   | TOTP 2FA (Payload plugin or custom auth strategy)                                                                  | PRD §4.1: MFA is mandatory                                                                                                                 |
+| Database    | **PostgreSQL** (Neon / Supabase / RDS)                                                                             | Ledger integrity, transactions, unique constraints for idempotency                                                                         |
+| Payments    | **Stripe** (Payment Element on our own page, PaymentIntents)                                                       | Branded checkout, USD/GBP, 3DS/SCA, refunds and disputes through the API, signed webhooks. The PRD's reference links already assume Stripe |
+| Media       | S3-compatible storage (S3 / R2): a **private** bucket for pending uploads and a public CDN path for approved files | PRD §11, §14.2                                                                                                                             |
+| Email       | Postmark or Resend (SPF/DKIM/DMARC)                                                                                | Transactional receipts                                                                                                                     |
+| Anti-abuse  | Cloudflare Turnstile + rate limiting (Upstash/Redis)                                                               | PRD §15.1                                                                                                                                  |
+| Monitoring  | Sentry + uptime check; nightly DB backups with a restore drill                                                     | PRD §15.4, launch checklist                                                                                                                |
+| Hosting     | Vercel (app) + managed Postgres                                                                                    | Simple and supports preview deploys                                                                                                        |
+| Tests       | Vitest (unit), Playwright (e2e + axe accessibility), Stripe CLI for webhook tests                                  | PRD §16                                                                                                                                    |
 
 ## 3. Guardrails that shape the code
 
@@ -38,12 +38,14 @@ A memorial-first website for Comfort Kwaw with a deep-purple, cinematic look. It
 ## 5. Milestones
 
 ### M0 — Foundation (≈1 week)
+
 - Scaffold Next.js + TS + Tailwind + Payload + Postgres; ESLint/Prettier; GitHub Actions CI (lint, typecheck, unit tests, Playwright smoke).
 - Design tokens (§6.3), fonts (editorial serif such as Cormorant/Playfair plus a sans such as Inter), base components: Button (gold/outline/ghost), SectionHeading with eyebrow, CurvedDivider, GlowPortrait, FloralAccent (decorative, `aria-hidden`).
 - Global layout: header with active state, mobile menu, persistent "Honor Comfort Kwaw" CTA; footer (§7.9) with a dynamic year; 404 and error pages.
 - `prefers-reduced-motion` handling and focus styles. `.env.example` (no secrets committed).
 
 ### M1 — Public site, CMS-driven (≈2 weeks)
+
 - Homepage: all 9 sections in order (§7.1–7.9), using concept image 10 as the layout reference. Hero headline is "Forever Comfort" (image 10 matches the PRD; image 1's "Comfort Kwaw" headline does not).
 - Purpose section (§7.4) renders only when `mission_copy_approved` is on.
 - Honor teaser (§7.5): USD/GBP toggle and presets that link to `/honor?amount=&currency=`. The server re-validates these values, and the homepage never shows card fields.
@@ -51,17 +53,20 @@ A memorial-first website for Comfort Kwaw with a deep-purple, cinematic look. It
 - All copy lives in the CMS, seeded with the PRD's verbatim strings.
 
 ### M2 — Admin, roles, moderation (≈1.5 weeks)
+
 - Payload access control per role (§4), TOTP MFA enforced for every admin, audit-log hook on every privileged write.
 - Draft → review → publish workflow. Legal and disclosure fields can be published only by an approver.
 - Moderation queue: Approve / Reject / Hide message, Approve / Remove photo, each with reason, actor and timestamp. Approval is blocked without `public_consent`.
 - Settings screen: flags, presets, min/max limits, support email, webhook health (no secrets shown). Two-person approval for payout and banking changes.
 
 ### M3 — Visitor submissions (≈1 week)
+
 - Memory form (§11.1) and photo upload: MIME/size checks, private bucket, malware scan hook. Contact form (§8.3).
 - Turnstile, rate limiting, CSRF, length limits; accessible inline errors.
 - Emails: memory received, contact received, and a staff notification sent to the verified inbox.
 
 ### M4 — Payments (≈2–2.5 weeks)
+
 - `/honor` (§8.2): currency selector, presets, custom amount, private-by-default display, a public-display opt-in left unchecked by default, email for the receipt, and an optional note.
 - Server flow (§9.3): validate amount, currency and flags → create a PaymentIntent with an idempotency key → review step showing recipient, classification, total, fees, refund and tax status → Payment Element (3DS).
 - `/api/stripe/webhook`: signature verification, `payment_events` dedupe on the event id, state machine (pending, succeeded, failed, canceled, refunded, partially refunded, disputed), settlement and fee capture from the balance transaction.
@@ -71,10 +76,12 @@ A memorial-first website for Comfort Kwaw with a deep-purple, cinematic look. It
 - Monthly honoring is built behind `recurring_enabled=false`, or deferred entirely. **Decision needed.**
 
 ### M5 — Dashboard & reporting (≈1 week)
+
 - Metrics (§12.2): USD gross and GBP gross shown separately, fees, net settled, refunds, success/pending/failed counts, and a USD-equivalent total with the FX source shown.
 - Payments table with filters (§12.3) and transaction detail. CSV/XLSX export with per-currency columns and conversion metadata.
 
 ### M6 — Hardening & launch (≈1.5 weeks)
+
 - Playwright e2e for every scenario in PRD §16, including webhook replay and duplicate tests, invalid amounts, and moderation consent rules. axe checks for WCAG 2.2 AA.
 - Cross-browser and device pass (§16.5), Lighthouse/CWV budget, image pipeline (AVIF/WebP, responsive sizes, lazy loading).
 - Security: headers/CSP, dependency scanning, secret scan, backup and restore drill, Sentry alerts.
@@ -83,14 +90,33 @@ A memorial-first website for Comfort Kwaw with a deep-purple, cinematic look. It
 **Total: roughly 10–11 weeks for one full-stack developer.** M1 and M2 can run in parallel with two people.
 
 ## 6. External blockers (client-owned — PRD §19)
+
 Nothing below blocks the build. All of it blocks launch.
+
 - Gate A: family-approved portrait (with rights), biography, dates, captions, gallery photos, and mission wording.
 - Gate B: legal recipient, entity type, fund classification, tax wording, refund policy, privacy and terms.
 - Gate C: Stripe underwriting approval for this activity, currencies, methods, GBP settlement choice.
 - Domain, verified support email, official social links, admin and moderator nominees, custom amount min/max.
 
 ## 7. Decisions I need from you
-1. Approve the stack (Next.js + Payload + Postgres + Stripe on Vercel), or name your preferred one.
-2. Monthly honoring: build it behind a flag now, or defer it?
-3. Use the client-supplied portrait in dev/staging now, or only neutral placeholders until Gate A?
-4. Should I start M0 on branch `claude/vibrant-mayer-b3rwvz`?
+
+1. ~~Stack~~: proposed stack accepted.
+2. Monthly honoring: **open**. The recommendation is to defer it, but design the payment model so it can be added later.
+3. ~~Portrait~~: use the client-supplied portrait on test/staging. Family sign-off is still needed for production.
+4. ~~Start M0~~: done (see status below).
+
+## 8. Status
+
+- **M0: done.** Next.js 16 + Tailwind 4 scaffold, brand tokens, fonts, UI primitives, header with mobile menu and footer, hero section, 404 and error pages, money helpers with unit tests, Playwright smoke and axe tests, CI workflow. Payload/Postgres setup moved to the start of M2, where the CMS is first needed; M1 reads copy from `src/content/`.
+- **M1: done.** Homepage Sections 1–8 in PRD order (the Purpose section is built but hidden behind `missionCopyApproved`), plus `/legacy`, `/honor` (currency, presets, custom amount and summary; payment stays disabled), `/memories`, `/gallery` (accessible lightbox), `/contact`, and draft `/privacy`, `/terms` and `/payment-information`, plus `/accessibility`. Launch flags live in `src/content/flags.ts`. Forms for memories, photos and contact are M3.
+- **M2: done.** Payload CMS 3 inside the Next.js app with PostgreSQL. Roles (super admin, publisher, editor, legal approver, moderator, finance, support) with field-level access. Mandatory TOTP MFA (payload-totp). First-admin bootstrap locked to `BOOTSTRAP_ADMIN_EMAIL`. Moderation queue: Pending by default, approval needs consent, visitor text can't be edited. Images need approval, rights and alt text. Homepage and Legacy copy have drafts and versions, and only publishers publish. Site settings hold the launch flags; switching payments on needs two super admins. Append-only audit log. Public pages read the CMS through tagged caches that refresh on every change, with a static fallback when no database is configured. Migrations only, no auto-push. Legal pages stay in code until counsel provides final text. Production still needs Neon, Blob and the environment variables.
+- **M3: done.** Memory form (with optional photo), Share a Photograph form and Contact form, each gated by its Site settings switch. Server actions validate with zod. Photos are decoded, resized and re-encoded by sharp (metadata including GPS stripped, non-images rejected, 4 MB limit with browser-side downscaling first), stored privately as Pending visitor media, and a visitor photo needs the visitor's consent to be approved. Anti-abuse: honeypot, signed timer, 5 per hour per salted IP hash, and optional Cloudflare Turnstile. Emails: visitor confirmations and staff review links via Resend, logged to the console until configured. Approved memories show their photo only if that photo was approved. Malware scanning is replaced by full re-encoding; a separate scanner can be added if the processor requires one. Before opening the forms in production: a verified support inbox, Resend domain, Turnstile keys and named moderators.
+- **M4: done.** Three-step Honor checkout with Stripe's Payment Element, server-side amount, currency and flag validation, and PaymentIntents with idempotency keys. The signed webhook is the only way to mark a payment paid; events are deduplicated, status only moves forward, and amount/currency must match. Settlement (gross, fee, net, FX) comes from Stripe balance transactions, including a later `charge.updated`. Refunds and disputes are recorded; finance staff refund from the admin with an over-refund guard. Confirmation and receipt pages are protected by a reference plus secret token, with a printable receipt. Receipt and refund emails. Payments can only be switched on once all disclosures are filled, and live keys are blocked until approval. Tested end to end against Stripe test mode (GBP to AED settlement verified). Monthly honoring is deferred. Note: the Stripe test account is UAE-registered; the live account must match the approved legal payee (Gate C).
+- **M5: done.** Finance overview in the admin (finance role plus verified TOTP). It shows USD and GBP gross, refunds and net separately; fees and net by settlement currency from Stripe; supporter, pending and failed counts; date ranges. The USD-equivalent total uses a documented reporting rate (rate, source, date) that finance maintains in Site settings. Excel and CSV exports carry per-currency columns, settlement and Stripe references, and range/author/FX metadata. CSV is protected against formula injection, and exports are audit-logged and never cached. Tested with unit tests, real exports, and browser tests for role and TOTP gating.
+- **Donor accounts (PRD addendum A1): done.** Requested by the owner on 23 Nov 2026; requirements are in `docs/prd-addendum-donor-accounts.md`. Passwordless sign-in by emailed link (single-use, hashed, 20 min, with a Continue button so link scanners can't use it up), a signed 12-hour session, a portal listing the donor's own payments with receipt and status links, name-display consent control, and audit entries. Receipt and refund emails carry secure links. Needs Resend in production before it can be used.
+- **M6: done (engineering side).**
+  - **Security:** CSP and security headers (Stripe checkout verified under the policy); personal pages are `no-store`; `robots.txt` and sitemap exclude private pages; secrets scan of git history clean; dependency audit reviewed (7 low/moderate inside Payload tooling).
+  - **Operations:** `/api/health` uptime check; structured server-error logging; backup and restore scripts with a successful local drill.
+  - **Performance and quality:** Stripe.js deferred until the payment step (Honor page blocking time down from 430 ms to 80 ms); hero image marked high priority. Lighthouse 91–94 performance, 100 accessibility, 100 best practices, 100 SEO.
+  - **Docs:** `docs/runbook.md` and `docs/launch-checklist.md`.
+  - **Remaining launch items** are owner/legal/processor approvals (Gates A–D) and account setup (Resend, Turnstile, domain, uptime monitor), tracked in the checklist.
