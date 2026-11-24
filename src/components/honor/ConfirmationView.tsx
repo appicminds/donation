@@ -42,6 +42,7 @@ export function ConfirmationView({ initial, token }: { initial: HonorStatus; tok
 
   const amount = formatMoney({ amountMinor: status.amountMinor, currency: status.currency });
   const receiptHref = `/honor/receipt?ref=${encodeURIComponent(status.receiptRef)}&t=${encodeURIComponent(token)}`;
+  const accountHref = `/account?ref=${encodeURIComponent(status.receiptRef)}&t=${encodeURIComponent(token)}`;
   const heading = (text: string) => (
     <h1 ref={headingRef} tabIndex={-1} className="text-4xl text-ink outline-none sm:text-5xl">
       {text}
@@ -65,13 +66,21 @@ export function ConfirmationView({ initial, token }: { initial: HonorStatus; tok
               Return to Memorial
             </ButtonLink>
           </div>
-          <p className="text-sm text-ink/75">
-            You can find this receipt again at any time in your{" "}
-            <a href="/account" className="text-violet underline underline-offset-4">
-              donor account
-            </a>
-            .
-          </p>
+          <section
+            aria-labelledby="account-ready-title"
+            className="space-y-3 rounded-2xl border-l-4 border-gold bg-white p-6 shadow-sm"
+          >
+            <h2 id="account-ready-title" className="font-display text-2xl text-ink">
+              Your donor account is ready
+            </h2>
+            <p className="text-ink/80">
+              Sign in any time with the email address on this payment to see your receipts. We will email you a code to
+              confirm it&apos;s you, and you can add a password if you like.
+            </p>
+            <ButtonLink href={accountHref} variant="outline-dark">
+              Go to your donor account
+            </ButtonLink>
+          </section>
         </>
       )}
 

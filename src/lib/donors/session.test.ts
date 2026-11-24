@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { createSession, hashToken, newLoginToken, normaliseEmail, readSession, SESSION_TTL_MS } from "./session";
+import {
+  codesMatch,
+  createSession,
+  hashSignInCode,
+  hashToken,
+  maskEmail,
+  newLoginToken,
+  newSignInCode,
+  normaliseEmail,
+  readSession,
+  SESSION_TTL_MS,
+} from "./session";
 
 process.env.PAYLOAD_SECRET ??= "test-secret-for-donor-sessions";
 
@@ -26,5 +37,22 @@ describe("donor sessions", () => {
     expect(a.hash).not.toContain(a.token);
     expect(newLoginToken().token).not.toBe(a.token);
     expect(normaliseEmail(" X@Y.Z ")).toBe("x@y.z");
+  });
+});
+
+describe("sign-in codes", () => {
+  it("are six digits and bound to the email", () => {
+    const code = newSignInCode();
+    expect(code).toMatch(/^\d{6}$/);
+    const stored = hashSignInCode("Jane@Example.com", code);
+    expect(codesMatch(stored, "jane@example.com", code)).toBe(true);
+    expect(codesMatch(stored, "other@example.com", code)).toBe(false);
+    expect(codesMatch(stored, "jane@example.com", code === "000000" ? "000001" : "000000")).toBe(false);
+    expect(codesMatch(stored, "jane@example.com", "12345")).toBe(false);
+    expect(codesMatch(null, "jane@example.com", code)).toBe(false);
+  });
+  it("masks emails for display", () => {
+    expect(maskEmail("jane.doe@example.com")).toBe("j•••e@example.com");
+    expect(maskEmail("jo@example.com")).toBe("j•••@example.com");
   });
 });

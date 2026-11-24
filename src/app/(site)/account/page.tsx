@@ -2,21 +2,37 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { DonorSignInForm } from "@/components/forms/DonorSignInForm";
+import { DonorPasswordForm, DonorSetPasswordForm, DonorSignInForm } from "@/components/forms/DonorSignInForm";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { PageHero } from "@/components/ui/PageHero";
 import { hasDatabase, payloadClient } from "@/lib/cms";
-import { setNameDisplay, signOutDonor } from "@/lib/donors/actions";
-import { donorPayments } from "@/lib/donors/data";
-import { currentDonor } from "@/lib/donors/server";
+import { removeDonorPassword, setNameDisplay, signOutDonor } from "@/lib/donors/actions";
+import { donorPayments, emailForReceipt, findDonor } from "@/lib/donors/data";
+import { currentDonor, pendingEmail } from "@/lib/donors/server";
 import { formatMoney } from "@/lib/money";
 
 export const metadata: Metadata = { title: "Donor account", robots: { index: false, follow: false } };
 
-type Props = { searchParams: Promise<{ expired?: string; signedOut?: string; saved?: string }> };
+type Props = {
+  searchParams: Promise<{
+    expired?: string;
+    signedOut?: string;
+    saved?: string;
+    welcome?: string;
+    ref?: string;
+    t?: string;
+  }>;
+};
 
-/** Donor account (PRD addendum A1): passwordless sign-in and the donor's own payments. */
+const SAVED: Record<string, string> = {
+  "1": "Your preference has been saved.",
+  "password-set": "Your password has been saved. Next time you can sign in with it, or with an email code.",
+  "password-changed": "Your password has been changed.",
+  "password-removed": "Your password has been removed. You can still sign in with an email code.",
+};
+
+/** Donor account (PRD addendum A1): email-code or optional password sign-in, and the donor's own payments. */
 export default function AccountPage({ searchParams }: Props) {
   return (
     <>
@@ -57,38 +73,66 @@ async function Account({ searchParams }: Props) {
   const donor = await currentDonor();
 
   if (!donor) {
+    const ready = hasDatabase() && emailReady();
+    const prefill =
+      (ready && q.ref && q.t ? await emailForReceipt(await payloadClient(), q.ref, q.t) : null) ??
+      (ready ? await pendingEmail() : null) ??
+      undefined;
     return (
-      <section aria-labelledby="signin-title" className="space-y-6">
+      <div className="space-y-12">
         {q.expired && (
-          <Notice title="This link has expired">
-            Sign-in links work once and expire after 20 minutes. Please request a new one.
+          <Notice title="This sign-in has expired">
+            Sign-in codes and links work once and expire after 20 minutes. Please request a new code.
           </Notice>
         )}
         {q.signedOut && <Notice>You have signed out.</Notice>}
-        <h2 id="signin-title" className="text-3xl text-ink">
-          Sign in with your email
-        </h2>
-        <p className="text-ink/80">
-          No password is needed. Enter the email address you used for your receipt and we will send you a link that
-          signs you in.
-        </p>
-        {hasDatabase() && emailReady() ? (
-          <DonorSignInForm />
-        ) : (
-          <Notice>
-            Donor sign-in will be available soon. Your receipt email contains a link to your receipt in the meantime.
-          </Notice>
+        <section aria-labelledby="signin-title" className="space-y-6">
+          <h2 id="signin-title" className="text-3xl text-ink">
+            Sign in with an email code
+          </h2>
+          <p className="text-ink/80">
+            Enter the email address you used for your receipt. We will email you a 6-digit code. No password is needed.
+          </p>
+          {ready ? (
+            <DonorSignInForm email={prefill} />
+          ) : (
+            <Notice>
+              Donor sign-in will be available soon. Your receipt email contains a link to your receipt in the meantime.
+            </Notice>
+          )}
+        </section>
+        {ready && (
+          <section aria-labelledby="password-title" className="space-y-6 border-t border-ink/10 pt-10">
+            <h2 id="password-title" className="text-3xl text-ink">
+              Or sign in with your password
+            </h2>
+            <p className="text-ink/80">
+              Only if you have added a password to your account. Forgotten it? Use an email code above instead.
+            </p>
+            <DonorPasswordForm email={prefill} />
+          </section>
         )}
-      </section>
+      </div>
     );
   }
 
-  const payments = await donorPayments(await payloadClient(), donor.email);
+  const payload = await payloadClient();
+  const [payments, record] = await Promise.all([donorPayments(payload, donor.email), findDonor(payload, donor.email)]);
   const showName = payments.some((p) => p.showName);
+  const hasPassword = Boolean(record?.passwordHash);
 
   return (
     <div className="space-y-12">
-      {q.saved && <Notice>Your preference has been saved.</Notice>}
+      {q.saved && SAVED[q.saved] && <Notice>{SAVED[q.saved]}</Notice>}
+      {q.welcome && !hasPassword && (
+        <Notice title="Welcome to your donor account">
+          You are signed in. Next time you can sign in with an email code again, or{" "}
+          <a href="#set-password-title" className="text-violet underline underline-offset-4">
+            add a password
+          </a>{" "}
+          for faster sign-in. A password is optional.
+        </Notice>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-ink/80">
           Signed in as <strong className="text-ink">{donor.email}</strong>
@@ -168,6 +212,27 @@ async function Account({ searchParams }: Props) {
           </form>
         </section>
       )}
+
+      <section aria-labelledby="set-password-title" className="space-y-4">
+        <h2 id="set-password-title" className="text-3xl text-ink">
+          {hasPassword ? "Your password" : "Add a password (optional)"}
+        </h2>
+        <p className="text-ink/80">
+          {hasPassword
+            ? "You can sign in with your password or with an email code. Change or remove your password here."
+            : "You can always sign in with an email code. A password lets you sign in without waiting for an email."}
+        </p>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-ink/5">
+          <DonorSetPasswordForm changing={hasPassword} />
+        </div>
+        {hasPassword && (
+          <form action={removeDonorPassword}>
+            <Button type="submit" variant="outline-dark">
+              Remove password
+            </Button>
+          </form>
+        )}
+      </section>
 
       <section aria-labelledby="help-title" className="space-y-2 text-ink/80">
         <h2 id="help-title" className="text-3xl text-ink">

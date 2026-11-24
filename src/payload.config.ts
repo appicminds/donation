@@ -9,6 +9,7 @@ import { migrations } from "./migrations";
 import { AuditLogs } from "./payload/collections/AuditLogs";
 import { ContactMessages } from "./payload/collections/ContactMessages";
 import { DonorLoginTokens } from "./payload/collections/DonorLoginTokens";
+import { Donors } from "./payload/collections/Donors";
 import { Media } from "./payload/collections/Media";
 import { Memories } from "./payload/collections/Memories";
 import { PaymentEvents, Payments, Refunds } from "./payload/collections/Payments";
@@ -37,7 +38,18 @@ export default buildConfig({
       },
     },
   },
-  collections: [Memories, Media, ContactMessages, Payments, Refunds, PaymentEvents, DonorLoginTokens, Users, AuditLogs],
+  collections: [
+    Memories,
+    Media,
+    ContactMessages,
+    Payments,
+    Refunds,
+    PaymentEvents,
+    DonorLoginTokens,
+    Donors,
+    Users,
+    AuditLogs,
+  ],
   globals: [HomepageContent, LegacyContent, SiteSettings],
   db: postgresAdapter({
     pool: { connectionString: process.env.DATABASE_URL },

@@ -74,6 +74,7 @@ export interface Config {
     refunds: Refund;
     'payment-events': PaymentEvent;
     'donor-login-tokens': DonorLoginToken;
+    donors: Donor;
     users: User;
     'audit-logs': AuditLog;
     'totp-attempts': TotpAttempt;
@@ -91,6 +92,7 @@ export interface Config {
     refunds: RefundsSelect<false> | RefundsSelect<true>;
     'payment-events': PaymentEventsSelect<false> | PaymentEventsSelect<true>;
     'donor-login-tokens': DonorLoginTokensSelect<false> | DonorLoginTokensSelect<true>;
+    donors: DonorsSelect<false> | DonorsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'totp-attempts': TotpAttemptsSelect<false> | TotpAttemptsSelect<true>;
@@ -387,6 +389,25 @@ export interface DonorLoginToken {
   expiresAt: string;
   usedAt?: string | null;
   ipHash?: string | null;
+  codeHash?: string | null;
+  codeAttempts?: number | null;
+  kind?: ('signin' | 'password-failure') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donors".
+ */
+export interface Donor {
+  id: number;
+  email: string;
+  name?: string | null;
+  passwordHash?: string | null;
+  passwordSetAt?: string | null;
+  failedPasswordAttempts?: number | null;
+  passwordLockedUntil?: string | null;
+  lastSignInAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -474,6 +495,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'donor-login-tokens';
         value: number | DonorLoginToken;
+      } | null)
+    | ({
+        relationTo: 'donors';
+        value: number | Donor;
       } | null)
     | ({
         relationTo: 'users';
@@ -705,6 +730,24 @@ export interface DonorLoginTokensSelect<T extends boolean = true> {
   expiresAt?: T;
   usedAt?: T;
   ipHash?: T;
+  codeHash?: T;
+  codeAttempts?: T;
+  kind?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "donors_select".
+ */
+export interface DonorsSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  passwordHash?: T;
+  passwordSetAt?: T;
+  failedPasswordAttempts?: T;
+  passwordLockedUntil?: T;
+  lastSignInAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

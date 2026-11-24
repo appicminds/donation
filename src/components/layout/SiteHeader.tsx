@@ -67,6 +67,14 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          {/* PRD addendum A1-17: donor sign-in from every page. */}
+          <Link
+            href="/account"
+            aria-current={isActive(pathname, "/account") ? "page" : undefined}
+            className="hidden min-h-11 items-center rounded-full px-4 text-sm font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white md:inline-flex"
+          >
+            Donor login
+          </Link>
           <div className="hidden md:block">
             <ButtonLink href={site.primaryCta.href} variant="outline-light" className="px-4">
               {site.primaryCta.label}
@@ -118,6 +126,18 @@ export function SiteHeader() {
               </li>
             );
           })}
+          <li className="md:hidden">
+            <Link
+              href="/account"
+              aria-current={isActive(pathname, "/account") ? "page" : undefined}
+              className={cn(
+                "flex min-h-12 items-center border-l-2 pl-4 text-base text-white/90 hover:text-white",
+                isActive(pathname, "/account") ? "border-gold font-semibold text-white" : "border-transparent",
+              )}
+            >
+              Donor login
+            </Link>
+          </li>
           <li className="pt-3 pb-1 md:hidden">
             <ButtonLink href={site.primaryCta.href} className="w-full" arrow>
               {site.primaryCta.label}
