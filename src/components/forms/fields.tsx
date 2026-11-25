@@ -56,12 +56,14 @@ export function TextField({
   autoComplete,
   maxLength,
   inputMode,
+  onChange,
 }: Common & {
   type?: "text" | "email" | "password";
   defaultValue?: string;
   autoComplete?: string;
   maxLength?: number;
   inputMode?: "numeric" | "text" | "email";
+  onChange?: (value: string) => void;
 }) {
   const id = useId();
   return (
@@ -76,6 +78,7 @@ export function TextField({
         autoComplete={autoComplete}
         maxLength={maxLength}
         inputMode={inputMode}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy(id, hint, error)}
         className={cn(inputBase, "min-h-12")}

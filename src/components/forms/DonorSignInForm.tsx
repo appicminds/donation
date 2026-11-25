@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { requestDonorCode, setDonorPassword, signInWithPassword, verifyDonorCode } from "@/lib/donors/actions";
 import { TextField } from "./fields";
 import { SubmissionForm } from "./SubmissionForm";
@@ -7,22 +8,92 @@ import { SubmissionForm } from "./SubmissionForm";
 // Each of these actions redirects on success, so the success panel is only a fallback.
 const done = { successTitle: "Done", successBody: "Please continue." };
 
-/** Step 1 of code sign-in: the receipt email address (A1-14). */
-export function DonorSignInForm({ email }: { email?: string }) {
+/**
+ * One sign-in form (A1-14, A1-16): an email address, sent a code by default.
+ * "Use my password instead" switches the same form to a password field, keeping
+ * the email. Nobody has to choose before they know what the options mean.
+ */
+export function DonorSignInForm({ email: initial }: { email?: string }) {
+  const [mode, setMode] = useState<"code" | "password">("code");
+  const [email, setEmail] = useState(initial ?? "");
+  const [focusField, setFocusField] = useState<"email" | "password" | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+
+  // After switching, put keyboard focus where the person needs to type next (once).
+  useEffect(() => {
+    if (focusField) box.current?.querySelector<HTMLInputElement>(`input[name="${focusField}"]`)?.focus();
+  }, [mode, focusField]);
+  const switchTo = (next: "code" | "password") => (
+    <button
+      type="button"
+      onClick={() => {
+        setFocusField(next === "password" && email ? "password" : "email");
+        setMode(next);
+      }}
+      className="text-sm font-medium text-violet underline underline-offset-4 hover:text-plum"
+    >
+      {next === "password" ? "Use my password instead" : "Email me a code instead"}
+    </button>
+  );
+
+  if (mode === "password") {
+    return (
+      <div ref={box} className="space-y-5">
+        <SubmissionForm action={signInWithPassword} labelledBy="signin-title" submitLabel="Sign in" {...done}>
+          {({ errors = {}, values = {} }) => (
+            <>
+              <TextField
+                name="email"
+                type="email"
+                label="Email address"
+                required
+                autoComplete="username"
+                defaultValue={values.email ?? email}
+                onChange={setEmail}
+                error={errors.email}
+              />
+              <TextField
+                name="password"
+                type="password"
+                label="Password"
+                required
+                autoComplete="current-password"
+                maxLength={128}
+                hint="Forgotten it? Email yourself a code instead."
+                error={errors.password}
+              />
+            </>
+          )}
+        </SubmissionForm>
+        {switchTo("code")}
+      </div>
+    );
+  }
+
   return (
-    <SubmissionForm action={requestDonorCode} labelledBy="signin-title" submitLabel="Email me a sign-in code" {...done}>
-      {({ errors = {}, values = {} }) => (
-        <TextField
-          name="email"
-          type="email"
-          label="Email address used for your receipt"
-          required
-          autoComplete="email"
-          defaultValue={values.email ?? email}
-          error={errors.email}
-        />
-      )}
-    </SubmissionForm>
+    <div ref={box} className="space-y-5">
+      <SubmissionForm
+        action={requestDonorCode}
+        labelledBy="signin-title"
+        submitLabel="Email me a sign-in code"
+        {...done}
+      >
+        {({ errors = {}, values = {} }) => (
+          <TextField
+            name="email"
+            type="email"
+            label="Email address"
+            required
+            autoComplete="email"
+            defaultValue={values.email ?? email}
+            onChange={setEmail}
+            hint="The one you used for your receipt. We'll email you a 6-digit code."
+            error={errors.email}
+          />
+        )}
+      </SubmissionForm>
+      <p className="text-sm text-ink/75">Added a password to your account? {switchTo("password")}</p>
+    </div>
   );
 }
 
@@ -41,36 +112,6 @@ export function DonorCodeForm() {
           hint="Check your inbox, and your spam folder, for an email from the Comfort Kwaw Memorial Fund."
           error={errors.code}
         />
-      )}
-    </SubmissionForm>
-  );
-}
-
-/** Optional password sign-in (A1-16). */
-export function DonorPasswordForm({ email }: { email?: string }) {
-  return (
-    <SubmissionForm action={signInWithPassword} labelledBy="password-title" submitLabel="Sign in" {...done}>
-      {({ errors = {}, values = {} }) => (
-        <>
-          <TextField
-            name="email"
-            type="email"
-            label="Email address"
-            required
-            autoComplete="username"
-            defaultValue={values.email ?? email}
-            error={errors.email}
-          />
-          <TextField
-            name="password"
-            type="password"
-            label="Password"
-            required
-            autoComplete="current-password"
-            maxLength={128}
-            error={errors.password}
-          />
-        </>
       )}
     </SubmissionForm>
   );

@@ -108,8 +108,17 @@ test("the header offers donor login on every page", async ({ page }) => {
   await page.goto("/legacy");
   await page.getByRole("banner").getByRole("link", { name: "Donor login" }).click();
   await expect(page).toHaveURL(/\/account$/);
-  await expect(page.getByRole("heading", { name: "Sign in with an email code" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Or sign in with your password" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to your donor account" })).toBeVisible();
+  // One email field; the password field appears only when asked for, keeping the email.
+  await expect(page.getByLabel(/^Email address/)).toHaveCount(1);
+  await expect(page.getByLabel(/^Password/)).toHaveCount(0);
+  await page.getByLabel(/^Email address/).fill(DONOR);
+  await page.getByRole("button", { name: "Use my password instead" }).click();
+  await expect(page.getByLabel(/^Password/)).toBeFocused();
+  await expect(page.getByLabel(/^Email address/)).toHaveValue(DONOR);
+  await page.getByRole("button", { name: "Email me a code instead" }).click();
+  await expect(page.getByLabel(/^Password/)).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Email me a sign-in code" })).toBeVisible();
 });
 
 test("requesting a code looks the same for known and unknown emails", async ({ browser }) => {
@@ -117,7 +126,7 @@ test("requesting a code looks the same for known and unknown emails", async ({ b
     const page = await freshPage(browser);
     await page.goto("/account");
     await formReady(page, "Email me a sign-in code");
-    await page.getByLabel("Email address used for your receipt").fill(email);
+    await page.getByLabel(/^Email address/).fill(email);
     await page.getByRole("button", { name: "Email me a sign-in code" }).click();
     await expect(page).toHaveURL(/\/account\/code$/, { timeout: 15_000 });
     await expect(page.getByRole("heading", { name: "Enter your sign-in code" })).toBeVisible();
@@ -214,8 +223,9 @@ test("a donor can add a password and sign in with it", async ({ browser }) => {
 
   const fresh = await freshPage(browser);
   await fresh.goto("/account");
+  await fresh.getByRole("button", { name: "Use my password instead" }).click();
   await formReady(fresh, "Sign in");
-  const form = fresh.getByRole("form", { name: "Or sign in with your password" });
+  const form = fresh.getByRole("form", { name: "Sign in to your donor account" });
   await form.getByLabel(/^Email address/).fill(DONOR.toUpperCase());
   await form.getByLabel(/^Password/).fill(PASSWORD);
   await form.getByRole("button", { name: "Sign in" }).click();
@@ -225,8 +235,9 @@ test("a donor can add a password and sign in with it", async ({ browser }) => {
 
 async function tryPassword(page: Page, email: string, password: string) {
   await page.goto("/account");
+  await page.getByRole("button", { name: "Use my password instead" }).click();
   await formReady(page, "Sign in");
-  const form = page.getByRole("form", { name: "Or sign in with your password" });
+  const form = page.getByRole("form", { name: "Sign in to your donor account" });
   await form.getByLabel(/^Email address/).fill(email);
   await form.getByLabel(/^Password/).fill(password);
   await form.getByRole("button", { name: "Sign in" }).click();
@@ -262,18 +273,18 @@ test("wrong passwords give one message and pause password sign-in after five", a
 test("the receipt link pre-fills the sign-in email, and only with the right token", async ({ browser }) => {
   const page = await freshPage(browser);
   await page.goto(`/account?ref=CK-E2E1-ACCT&t=${RECEIPT_TOKEN}`);
-  await expect(page.getByLabel("Email address used for your receipt")).toHaveValue(DONOR);
+  await expect(page.getByLabel(/^Email address/)).toHaveValue(DONOR);
 
   const guess = await freshPage(browser);
   await guess.goto(`/account?ref=CK-E2E1-ACCT&t=${randomBytes(24).toString("base64url")}`);
-  await expect(guess.getByLabel("Email address used for your receipt")).toHaveValue("");
+  await expect(guess.getByLabel(/^Email address/)).toHaveValue("");
 });
 
 test("the confirmation page says the donor account is ready", async ({ page }) => {
   await page.goto(`/honor/confirmation?ref=CK-E2E1-ACCT&t=${RECEIPT_TOKEN}`);
   await expect(page.getByRole("heading", { name: "Your donor account is ready" })).toBeVisible();
   await page.getByRole("link", { name: "Go to your donor account" }).click();
-  await expect(page.getByLabel("Email address used for your receipt")).toHaveValue(DONOR);
+  await expect(page.getByLabel(/^Email address/)).toHaveValue(DONOR);
 });
 
 test("a tampered session cookie is treated as signed out", async ({ browser }) => {
@@ -285,7 +296,7 @@ test("a tampered session cookie is treated as signed out", async ({ browser }) =
     document.cookie = `__Host-ck_donor=${v}; Path=/; Secure`;
   }, `${forged}.forged`);
   await page.goto("/account");
-  await expect(page.getByRole("heading", { name: "Sign in with an email code" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Sign in to your donor account" })).toBeVisible();
 });
 
 test("the donor can change name display, which is recorded, and sign out", async ({ browser }) => {

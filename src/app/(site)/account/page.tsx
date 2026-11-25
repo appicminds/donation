@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { DonorPasswordForm, DonorSetPasswordForm, DonorSignInForm } from "@/components/forms/DonorSignInForm";
+import { DonorSetPasswordForm, DonorSignInForm } from "@/components/forms/DonorSignInForm";
 import { Button } from "@/components/ui/Button";
 import { Notice } from "@/components/ui/Notice";
 import { PageHero } from "@/components/ui/PageHero";
@@ -79,7 +79,7 @@ async function Account({ searchParams }: Props) {
       (ready ? await pendingEmail() : null) ??
       undefined;
     return (
-      <div className="space-y-12">
+      <div className="space-y-8">
         {q.expired && (
           <Notice title="This sign-in has expired">
             Sign-in codes and links work once and expire after 20 minutes. Please request a new code.
@@ -88,10 +88,11 @@ async function Account({ searchParams }: Props) {
         {q.signedOut && <Notice>You have signed out.</Notice>}
         <section aria-labelledby="signin-title" className="space-y-6">
           <h2 id="signin-title" className="text-3xl text-ink">
-            Sign in with an email code
+            Sign in to your donor account
           </h2>
           <p className="text-ink/80">
-            Enter the email address you used for your receipt. We will email you a 6-digit code. No password is needed.
+            Your account was created when you honored Comfort. Sign in with the same email address to see your payments
+            and receipts.
           </p>
           {ready ? (
             <DonorSignInForm email={prefill} />
@@ -101,17 +102,6 @@ async function Account({ searchParams }: Props) {
             </Notice>
           )}
         </section>
-        {ready && (
-          <section aria-labelledby="password-title" className="space-y-6 border-t border-ink/10 pt-10">
-            <h2 id="password-title" className="text-3xl text-ink">
-              Or sign in with your password
-            </h2>
-            <p className="text-ink/80">
-              Only if you have added a password to your account. Forgotten it? Use an email code above instead.
-            </p>
-            <DonorPasswordForm email={prefill} />
-          </section>
-        )}
       </div>
     );
   }
