@@ -2,7 +2,9 @@ import { withPayload } from "@payloadcms/next/withPayload";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
-const onVercel = Boolean(process.env.VERCEL);
+// HTTPS-only headers wherever the site is served over HTTPS: Vercel, or a server
+// (e.g. Coolify) whose public address is https://. Never on plain-http localhost.
+const httpsOnly = Boolean(process.env.VERCEL) || (process.env.NEXT_PUBLIC_SERVER_URL ?? "").startsWith("https://");
 
 /**
  * Content Security Policy (M6). Without nonces, so pages stay statically
@@ -23,7 +25,7 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  ...(onVercel ? ["upgrade-insecure-requests"] : []),
+  ...(httpsOnly ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const securityHeaders = [
@@ -37,7 +39,7 @@ const securityHeaders = [
     value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://js.stripe.com"), interest-cohort=()',
   },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
-  ...(onVercel ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }] : []),
+  ...(httpsOnly ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" }] : []),
 ];
 
 const nextConfig: NextConfig = {
