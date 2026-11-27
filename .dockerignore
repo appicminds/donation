@@ -1,0 +1,11 @@
+.git
+.next
+node_modules
+.env*
+!.env.example
+.scratch
+backups
+test-results
+playwright-report
+coverage
+*.log
